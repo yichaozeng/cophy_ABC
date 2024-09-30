@@ -4,9 +4,13 @@ format: pdf
 editor: visual
 ---
 
+
+
 We use the TreeDucken package for simulating co-phylogenies. The outputs of this model includes two trees, one for the host and other for the symbiont, and the association between the tips of the two trees in the format of a matrix.
 
 We first visualize the co-phylogeny with the TreeDucken package itself (the last line is commented out to omit the plot).
+
+
 
 ```{r}
 # For R/4.4.0}
@@ -61,7 +65,11 @@ cophy_obj <- sim_cophyBD(hbr = lambda_H,
 # plot.cophy(cophy_obj[[1]], col = "orange", lty = "dotted", lwd = 2)
 ```
 
+
+
 Alternatively, the co-phylogeny can be visualize using phytools (the last line is commented out to omit the plot).
+
+
 
 ```{r}
 # visualization using ape or phytools, transformation of the association matrix needed
@@ -81,14 +89,22 @@ cophylo_plot <- cophylo(cophy_obj[[1]][[1]], cophy_obj[[1]][[2]], assoc = ass_ma
 #plot(cophylo_plot)
 ```
 
+
+
 However, it turns out base ape does a good job plotting co-phylogenies as well, which is shown here.
+
+
 
 ```{r}
 plot(cophylo_plot,link.type="curved",link.lwd=4,
      link.lty="solid",link.col=make.transparent("red",0.25))
 ```
 
+
+
 To use the model for ABC, we slightly modify the way the model is parameterized. Instead of directly specifying the values of host and symbiont extinction rates, we define each of these two extinction rates as a fraction (between 0 and 1) of the correponding total speciation rate. We do this because TreeDucken returns an error when host extinction rate (mu_H) exceeds host total speciation rate (lambda_H + lambda_C). In contrast, it does not return an error when symbiont extinction rate (mu_S) exceeds symbiont total speciation rate (lambda_S + lambda_C), but we avoid this anyway since a symbiont clade undergoing faster extinction than speciation is less likely to persist to today.
+
+
 
 ```{r}
   #set.seed(34)
@@ -127,7 +143,11 @@ To use the model for ABC, we slightly modify the way the model is parameterized.
   
 ```
 
+
+
 Simulate multiple co-phylogenetic systems using the *same* parameters.
+
+
 
 ```{r}
 cophy_multi <- sim_cophyBD(hbr = lambda_H,
@@ -149,9 +169,13 @@ print(c(lambda_H,
       ))
 ```
 
+
+
 Below we show how to quantify the summary statistics for the co-phylogenetic systems.
 
 We start with phylogenetic summary statistics represented by number of extant lineages and phylogenetic distance.
+
+
 
 ```{r}
 # a function that computes the number of tips and phylogenetic distance
@@ -193,7 +217,11 @@ SS_phylo <- lapply(cophy_multi, SS_phylo_ntips_PD)
 
 ```
 
+
+
 Before we move on to network properties including nestedness and modularity, it is helpful to visualize an example network.
+
+
 
 ```{r}
 library(bipartite)
@@ -219,7 +247,11 @@ ggnet2(net_obj, node.size = 5, color = "mode", palette = col, edge.color = "gray
        )
 ```
 
+
+
 Now we compute the raw and z-standardized network properties.
+
+
 
 ```{r}
 # Function for calculating binary modularity
@@ -267,7 +299,11 @@ SS_network <- lapply(cophy_multi, SS_NODF_modularity)
 
 ```
 
+
+
 Now, we move on to properties regarding both the phylogenies and the network - different measures of mantel correlation betweeb the *phylogenetic distance* matrix and the *interaction partner dissimilarity* matrix.
+
+
 
 ```{r}
 library(GUniFrac)
@@ -320,7 +356,11 @@ SS_mantel <- function(cophy){
 SS_mantel_stat_signif <- lapply(cophy_multi, SS_mantel)
 ```
 
+
+
 Now we combine the summary statistics we have calculated into a dataframe for visualization.
+
+
 
 ```{r}
 SS_phylo_dat <- data.frame(
@@ -349,7 +389,11 @@ SS_mantel_dat <- data.frame(
 )
 ```
 
+
+
 Visualize the multi-dimensional joint distributions of the summary statistics regarding the *two phylogenies*.
+
+
 
 ```{r warning: false}
 
@@ -361,26 +405,39 @@ library(ggplot2)
 ggpairs(SS_phylo_dat)
 ```
 
+
+
 Visualize the multi-dimensional joint distributions of the summary statistics regarding the *network*.
+
+
 
 ```{r}
 # Create a pair plot
 ggpairs(SS_network_dat)
 ```
 
+
+
 Visualize the multi-dimensional joint distributions of the summary statistics regarding both the *two phylogenies and the network*.
+
+
 
 ```{r}
 # Create a pair plot
 ggpairs(SS_mantel_dat)
 ```
 
+
+
 Here it may be necessary to do a sanity check to make sure the simulated co-phylogenies are within the ranges of real networks.
 
-```{r}
 
-```
 
 ```{r}
 
 ```
+
+```{r}
+
+```
+
