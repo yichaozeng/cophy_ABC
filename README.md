@@ -42,12 +42,12 @@ To perform the ABC for this real cophylogenetic dataset with the simulations tha
 
 Parameter estimates:
 <p align="center">
-    <img src="https://https://github.com/yichaozeng/cophy_ABC/blob/main/images/img1.png" width="350">
+    <img src=images/img1.png width="350">
 </p>
 
 Posterior predictive checks (where the line represents the real data, and the dots represent the accepted simulations):
 <p align="center">
-    <img src="https://https://github.com/yichaozeng/cophy_ABC/blob/main/images/img2.png" width="350">
+    <img src=images/img2.png width="350">
 </p>
 
 
