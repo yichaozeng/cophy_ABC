@@ -41,10 +41,14 @@ The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rd
 To perform the ABC for this real cophylogenetic dataset with the simulations that we generated in the last step, specify your `folder_id` (you can have multiple of them corresponding to different assumptions or prior distributions) on Lines 22 & 23 in `R/beetle_data_analyses.R`. Then, run `R/beetle_data_analyses.R`. The parameter estimates will be stored in `cophy_ABC_results/real_para_est.rds`. Visualizations of parameter estimates and posterior predictive checks will be stored in `cophy_ABC_results/beetle_results.pdf`, with examples provided below.
 
 Parameter estimates:
-![alt text](image.png)
+<p align="center">
+    <img src="https://https://github.com/yichaozeng/cophy_ABC/blob/main/images/img1.png" width="350">
+</p>
 
 Posterior predictive checks (where the line represents the real data, and the dots represent the accepted simulations):
-![alt text](image-1.png)
+<p align="center">
+    <img src="https://https://github.com/yichaozeng/cophy_ABC/blob/main/images/img2.png" width="350">
+</p>
 
 
 ## References
