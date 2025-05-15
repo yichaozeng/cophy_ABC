@@ -47,7 +47,7 @@ Parameter estimates:
 
 Posterior predictive checks (where the line represents the real data, and the dots represent the accepted simulations):
 <p align="center">
-    <img src=images/img2.png width="350">
+    <img src=images/img2.png width="700">
 </p>
 
 
