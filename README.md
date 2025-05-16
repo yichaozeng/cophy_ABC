@@ -1,4 +1,4 @@
-# Macroevolutionary Rates of Species Interactions: Approximate Bayesian Inference from Cophylogenies
+# Speciation rate estimation from cophylogenies using Approximate Bayesian Computation
 
 ## Description
 This project presents an Approximate Bayesian Computation (ABC) approach to estimating speciation rates from cophylogenetic systems. The rates of four types of speciation can be inferred: host speciation ($\lambda_H$), symbiont speciation without host switching ($\lambda_S$), cospeciation ($\lambda_C$), and symbiont speciation with host switching ($\lambda_W$). This approach does not infer the rates of host extinction and symbiont extinction separately. Instead, it assumes that the relative extinctin rates ($\epsilon_H$ for the hosts and $\epsilon_S$ for the symbionts) are known. Under this assumption, the absolute extinction rates ($\mu_H$ for the hosts and $\mu_S$ for the symbionts) can be obtained by 
