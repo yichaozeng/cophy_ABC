@@ -19,6 +19,7 @@ The tutorial provided here is the full procedure to estimate speciation rates fr
 - [Setup](#setup)
 - [Simulating cophylogenies](#simulating-cophylogenies)
 - [ABC](#abc)
+- [BLenD curve as summary statistics](#blend-curve-as-summary-statistics)
 - [References](#references)
 - [Contact](#contact)
 
@@ -54,6 +55,42 @@ Posterior predictive checks (where the line represents the real data, and the do
     <img src=images/img2.png width="600">
 </p>
 
+## BLenD curve as summary statistics
+Posterior predictive checks (where the line represents the real data, and the dots represent the accepted simulations):
+<p align="center">
+    <img src=images/img_blend.png width="400">
+</p>
+Key to this ABC approach is a new design of summary statistics - the BLenD (Branch Length Difference) curve. It is a density curve of $\delta$, which is defined as
+$$
+\delta=\frac{l_H-l_S}{L}
+$$
+for each association in the cophylogeny.
+
+In the ABC procedure described in the previous sections, the BLenD curve is implemented as part of the `SS_norm` function in `R/functions.R`. A standalone implementation is presented below for clarity:
+```r
+# BLenD summary statistics can be computed from these three objects
+tree1 <- cophy[[1]] # the host tree
+tree2 <- cophy[[2]] # the symbiont tree
+net <- cophy[[3]] # the network (associations between hosts and symbionts)
+
+# first, prune host tree to keep only extant tips
+tree1 <- keep.tip(tree1, rownames(net))
+tree2 <- keep.tip(tree2, colnames(net))
+
+# find all associations (host-to-symbiont pairs)
+net_long <- melt(net)
+S_to_S_pairs <- net_long[net_long$value == 1, 1:2]
+
+# compute the branch lengths
+S_to_S_pairs$BL1 <- apply(S_to_S_pairs, MARGIN = 1, function(x) get_BL(tree1, x[1])) # for the host tips
+S_to_S_pairs$BL2 <- apply(S_to_S_pairs, MARGIN = 1, function(x) get_BL(tree2, x[2])) # for the symbiont tips
+
+# the difference
+S_to_S_pairs$div_time_diff <- S_to_S_pairs$BL1 - S_to_S_pairs$BL2
+
+# obtain the BLenD density curve
+dens <- density(S_to_S_pairs$div_time_diff, from = -1, to = 1)
+```
 
 ## References
 Dismukes, W., & Heath, T. A. (2021). treeducken: An R package for simulating cophylogenetic systems. Methods in Ecology and Evolution, 12(8), 1358-1364.
