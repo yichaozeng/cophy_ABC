@@ -39,16 +39,16 @@ The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rd
 2. Both trees are of the same height (form the root to the tips, including the length of the root edge).
 3. Both have been rescaled such that their height is equal to that of the cophylogenies simulated with `treeducken`.
 
-<p align="center">
+<div align="center">
     <img src=images/img_beetle.png width="800">
-</p>
+</div>
 
 To perform the ABC for this real cophylogenetic dataset with the simulations that we generated in the last step, specify your `folder_id` (you can have multiple of them corresponding to different assumptions or prior distributions) on Lines 22 & 23 in `R/beetle_data_analyses.R`. Then, run `R/beetle_data_analyses.R`. The parameter estimates will be stored in `cophy_ABC_results/real_para_est.rds`. Visualizations of parameter estimates and posterior predictive checks will be stored in `cophy_ABC_results/beetle_results.pdf`, with examples provided below.
 
 Parameter estimates:
-<p align="center">
+<div align="center">
     <img src=images/img1.png width="350">
-</p>
+</div>
 
 Posterior predictive checks (where the line represents the real data, and the dots represent the accepted simulations):
 <div align="center">
@@ -63,9 +63,9 @@ $$
 $$
 
 for each association in the cophylogeny (Panel a in the figure below).
-<p align="center">
+<div align="center">
     <img src=images/img_blend.png width="300">
-</p>
+</div>
 Thus, when there are two cophylogenies, the distance between the two cophylogenies can be defined as the area between their BLenD curves (shaded area in Panel b in the figure above). In the ABC procedure described in the previous sections, the BLenD curve is implemented as part of the \`SS_norm\` function in \`R/functions.R\`. A standalone implementation is presented below for clarity:
 
 ```r
