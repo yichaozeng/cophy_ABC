@@ -21,6 +21,7 @@ The tutorial provided here is the full procedure to estimate speciation rates fr
 - [ABC](#abc)
 - [BLenD curve as summary statistics](#blend-curve-as-summary-statistics)
 - [References](#references)
+- [Citation](#citation)
 - [Contact](#contact)
 
 ## Setup
