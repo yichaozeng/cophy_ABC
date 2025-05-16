@@ -56,7 +56,7 @@ Posterior predictive checks (where the line represents the real data, and the do
 </p>
 
 ## BLenD curve as summary statistics
-This section is only intended for those interested in understanding how the newly designed summary statistics work - the user do not need to understand this to use the ABC. Key to this ABC approach is a new design of summary statistics - the BLenD (Branch Length Difference) curve. It is a density curve of $\delta$, which is defined as
+This section is only intended for those interested in understanding how the newly designed summary statistics work - the user do not need to understand this to use the ABC. The new design of summary statistics, the BLenD (Branch Length Difference) curve, is a density curve of $\delta$. $\delta$ is defined as
 
 $$
 \delta=\frac{l_H-l_S}{L}
