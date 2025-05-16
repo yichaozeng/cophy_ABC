@@ -57,9 +57,11 @@ Posterior predictive checks (where the line represents the real data, and the do
 
 ## BLenD curve as summary statistics
 Key to this ABC approach is a new design of summary statistics - the BLenD (Branch Length Difference) curve. It is a density curve of $\delta$, which is defined as
+
 $$
 \delta=\frac{l_H-l_S}{L}
 $$
+
 for each association in the cophylogeny (Panel a in the figure below).
 <p align="center">
     <img src=images/img_blend.png width="300">
