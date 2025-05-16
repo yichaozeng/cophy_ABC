@@ -56,15 +56,15 @@ Posterior predictive checks (where the line represents the real data, and the do
 </p>
 
 ## BLenD curve as summary statistics
-Posterior predictive checks (where the line represents the real data, and the dots represent the accepted simulations):
-<p align="center">
-    <img src=images/img_blend.png width="400">
-</p>
 Key to this ABC approach is a new design of summary statistics - the BLenD (Branch Length Difference) curve. It is a density curve of $\delta$, which is defined as
 $$
 \delta=\frac{l_H-l_S}{L}
 $$
-for each association in the cophylogeny.
+for each association in the cophylogeny (Panel a in the figure below).
+<p align="center">
+    <img src=images/img_blend.png width="300">
+</p>
+Thus, when there are two cophylogenies, the distance between the two cophylogenies can be defined as the area between their BLenD curves (shaded area in Panel b in the figure above).
 
 In the ABC procedure described in the previous sections, the BLenD curve is implemented as part of the `SS_norm` function in `R/functions.R`. A standalone implementation is presented below for clarity:
 ```r
