@@ -29,7 +29,7 @@ The provided code works on a cluster running on SLURM. The `batch_command` folde
 ## Simulating cophylogenies
 Cophylogenies are simulated with the `sim_cophyBD` function from the `treeducken` package (Dismukes & Heath 2022). We start by creating several folders named `ex_cophy_sims`, `ex_cophy_plots`, `ex_cophy_statistics`, `ex_cophy_checks`, `ex_cophy_convergence`, and `ex_cophy_results` in yout working directory. Then, run `R/cophy_sim_system.R`. The R script is written in a way that avoids new simulations to overwrite older ones, so you can run this R script simultanesouly on multiple jobs to generate large numbers of simulations in a relatively short period of time.
 
-When your simulations are complete, run `R/archive_older_data.R` to put all simulations into a subfolder within `ex_cophy_sims`. The subfoler will be randomly named by a number; use this number as your `folder_id`, which will be need in subsequent steps.
+When your simulations are complete, run `R/archive_older_data.R` to put all simulations into a subfolder within `ex_cophy_sims`. The subfoler will be randomly named by a number; use this number as your `folder_id`, which will be needed in subsequent steps.
 
 If needed, the assumed relative extinction rates ($\epsilon_H$ for the hosts and $\epsilon_S$ for the symbionts) can be modifed in `R/cophy_sim_system.R`. The prior distributions of parameters can be modified in `R/cophy_sim.R`.
 
