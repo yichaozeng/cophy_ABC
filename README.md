@@ -69,6 +69,13 @@ for each association in the cophylogeny (Panel a in the figure below).
 Thus, when there are two cophylogenies, the distance between the two cophylogenies can be defined as the area between their BLenD curves (shaded area in Panel b in the figure above). In the ABC procedure described in the previous sections, the BLenD curve is implemented as part of the `SS_norm` function in `R/functions.R`. A standalone implementation is presented below for clarity:
 
 ```r
+# a function for getting the branch length of a tip
+get_BL <- function(tree, tip_name){
+  return(
+    tree$edge.length[tree$edge[,2] == which(tree$tip.label == tip_name)]
+  )
+}
+
 # BLenD summary statistics can be computed from these three objects
 tree1 <- cophy[[1]] # the host tree
 tree2 <- cophy[[2]] # the symbiont tree
