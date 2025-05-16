@@ -37,7 +37,7 @@ If needed, the assumed relative extinction rates ($\epsilon_H$ for the hosts and
 ## ABC
 The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rds`. The host and symbiont trees meet these requirements:
 1. Both contains a root edge (branch).
-2. Both trees are of the same height (form the root to the tips, including the length of the root edge).
+2. Both trees are of the same height (from the root to the tips, including the length of the root edge).
 3. Both have been rescaled such that their height is equal to that of the cophylogenies simulated with `treeducken`.
 
 <div align="center">
