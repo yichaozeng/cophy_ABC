@@ -67,9 +67,10 @@ for each association in the cophylogeny (Panel a in the figure below).
     <img src=images/img_blend.png width="300">
 </div>
 
-Thus, when there are two cophylogenies, the distance between the two cophylogenies can be defined as the area between their BLenD curves (shaded area in Panel b in the figure above). In the ABC procedure described in the previous sections, the BLenD curve is implemented as part of the \`SS_norm\` function in \`R/functions.R\`. A standalone implementation is presented below for clarity:
-
 <div>
+Thus, when there are two cophylogenies, the distance between the two cophylogenies can be defined as the area between their BLenD curves (shaded area in Panel b in the figure above). In the ABC procedure described in the previous sections, the BLenD curve is implemented as part of the \`SS_norm\` function in \`R/functions.R\`. A standalone implementation is presented below for clarity:
+</div>
+
 ```r
 # a function for getting the branch length of a tip
 get_BL <- function(tree, tip_name){
@@ -101,7 +102,6 @@ S_to_S_pairs$div_time_diff <- S_to_S_pairs$BL1 - S_to_S_pairs$BL2
 # obtain the BLenD density curve
 dens <- density(S_to_S_pairs$div_time_diff, from = -1, to = 1)
 ```
-</div>
 
 ## References
 Dismukes, W., & Heath, T. A. (2021). treeducken: An R package for simulating cophylogenetic systems. Methods in Ecology and Evolution, 12(8), 1358-1364.
