@@ -45,7 +45,7 @@ When your simulations are complete, run `R/archive_older_data.R` to put all simu
 If needed, the assumed relative extinction rates ($\epsilon_H$ for the hosts and $\epsilon_S$ for the symbionts) can be modifed in `R/cophy_sim_system.R`. The prior distributions of parameters can be modified in `R/cophy_sim.R`.
 
 ## Performance test
-The code provided here performs the ABC procedure for a set of cophylogenies 
+The code provided here performs the ABC procedure for a set of 1000 cophylogenies, whose speciation rates are randomly drawn from the prior distribution.
 
 ## Application to real data
 The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rds`. The host and symbiont trees meet these requirements:
