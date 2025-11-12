@@ -33,6 +33,8 @@ True speciation rates are randoml drawn from the prior distribution to simulate 
 
 $$
 \[\lambda_H \sim \mathrm{Exp}(0.5), \lambda_S \sim \mathrm{Exp}(0.5),\]
+$$
+$$
 \[\lambda_C \sim \mathrm{Exp}(1.2), \lambda_W \sim \mathrm{Exp}(0.5).\]
 $$
 
