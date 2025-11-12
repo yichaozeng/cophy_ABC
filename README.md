@@ -70,7 +70,7 @@ Posterior predictive checks (where the line represents the real data, and the do
 </div>
 
 ## BLenD curve as summary statistics
-The novelty of this approach lies in the newly desgined summary statistics, the BLenD (Branch Length Difference) curves. The implementation of the BLenD curves as summary statistics are explain in the Methods section of the of the paper (#citation).
+The novelty of this approach lies in the newly desgined summary statistics, the BLenD (Branch Length Difference) curves. The implementation of the BLenD curves as summary statistics are explain in the Methods section of the of the paper (see [Citation](#citation)).
 
 
 ## References
