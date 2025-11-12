@@ -13,13 +13,14 @@ $$
 
 For the user's information, some parameters are assigned a different name in the code: $\lambda_W$ - `exp_H`, $\epsilon_H$ - `mu_H_frac`, and $\epsilon_S$ - `mu_S_frac`.
 
-The tutorial provided here is the full procedure to estimate speciation rates from a given cophylogeny, using both the BLenD curve and tree sizes are summary statistics. This procedure is illustrated with a re-analysis of the cophylogenetic dataset from Van Dam et al. (2024). Our convergence analyses can be reproduced by applying this procedure to simulated cophylogenies whose true parameter values are known.
+The tutorial provided here is the full procedure to estimate speciation rates from a given cophylogeny, using the BLenD-a / BLenD-b curves and tree sizes as summary statistics. This procedure is illustrated with a re-analysis of the cophylogenetic dataset from Van Dam et al. (2024). 
 
 ## Table of Contents
 - [Setup](#setup)
-- [Simulating cophylogenies](#simulating-cophylogenies)
+- [Simulating cophylogenies from the prior distribution](#simulating-cophylogenies)
 - [ABC](#abc)
 - [BLenD curve as summary statistics](#blend-curve-as-summary-statistics)
+- [Performance test](#performance-test)
 - [References](#references)
 - [Citation](#citation)
 - [Contact](#contact)
@@ -101,6 +102,9 @@ S_to_S_pairs$div_time_diff <- S_to_S_pairs$BL1 - S_to_S_pairs$BL2
 # obtain the BLenD density curve
 dens <- density(S_to_S_pairs$div_time_diff, from = -1, to = 1)
 ```
+
+## Performance test
+We....
 
 ## References
 Dismukes, W., & Heath, T. A. (2021). treeducken: An R package for simulating cophylogenetic systems. Methods in Ecology and Evolution, 12(8), 1358-1364.
