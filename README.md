@@ -45,7 +45,7 @@ When your simulations are complete, run `R/archive_older_data.R` to put all simu
 If needed, the assumed relative extinction rates ($\epsilon_H$ for the hosts and $\epsilon_S$ for the symbionts) can be modifed in `R/cophy_sim_system.R`. The prior distributions of parameters can be modified in `R/cophy_sim.R`.
 
 ## Performance test
-The code provided here performs the ABC procedure for a set of 1000 cophylogenies, whose speciation rates are randomly drawn from the prior distribution.
+The performance of the ABC is tested againt a total of 1000 parameterizations randomly drawn from the prior distribution. To do this, 
 
 ## Application to real data
 The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rds`. The host and symbiont trees meet these requirements:
@@ -64,7 +64,7 @@ To perform the ABC for this real cophylogenetic dataset with the simulations tha
 </div>
 
 ## BLenD curve as summary statistics
-The novelty of this approach lies in the newly desgined summary statistics, the BLenD (Branch Length Difference) curves. The implementation of the BLenD curves as summary statistics are explain in the Methods section of the of the paper (see [Citation](#citation)).
+The novelty of this approach lies in the newly desgined summary statistics, the BLenD (Branch Length Difference) curves. The implementation of the BLenD curves as summary statistics are explained in the Methods section of the paper (see [Citation](#citation)). The R implementation for extracting samples of $\delta_a$ and $\delta_b$ can be found in the `SS_norm` function in `function.R`.
 
 
 ## References
