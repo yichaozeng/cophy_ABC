@@ -1,0 +1,14 @@
+Note:
+1. Need to create an empty folder named "ex_cophy_sims"
+
+
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
+sbatch Desktop/cophy_ABC/slurm/ex_cophy_sim_system.slurm
