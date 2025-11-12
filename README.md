@@ -45,7 +45,7 @@ When your simulations are complete, run `R/archive_older_data.R` to put all simu
 If needed, the assumed relative extinction rates ($\epsilon_H$ for the hosts and $\epsilon_S$ for the symbionts) can be modifed in `R/cophy_sim_system.R`. The prior distributions of parameters can be modified in `R/cophy_sim.R`.
 
 ## Performance test
-The performance of the ABC is tested againt a total of 1000 parameterizations randomly drawn from the prior distribution. To do this, 
+The performance of the ABC is tested againt a total of 1000 parameterizations randomly drawn from the prior distribution. To do this, run `R/relative_error_tree_size.R`.
 
 ## Application to real data
 The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rds`. The host and symbiont trees meet these requirements:
@@ -57,7 +57,7 @@ The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rd
     <img src=images/img_beetle.png width="800">
 </div>
 
-To perform the ABC for this real cophylogenetic dataset with the simulations that we generated in the last step, specify your `folder_id` (you can have multiple of them corresponding to different assumptions or prior distributions) on Lines 22 & 23 in `R/beetle_data_analyses.R`. Then, run `R/beetle_data_analyses.R`. The parameter estimates will be stored in `cophy_ABC_results/real_para_est.rds`. Visualizations of parameter estimates and posterior predictive checks will be stored in `cophy_ABC_results/beetle_results.pdf`, with examples provided below ($\epsilon_H$ and $\epsilon_S$ are assumed to 0.3, the line represents the real data, and the dots represent the accepted simulations in the posterior predictive checks panels):
+To perform the ABC for this real cophylogenetic dataset with the simulations that we generated in the last step, specify your `folder_id` (you can have multiple of them corresponding to different assumptions or prior distributions) on Lines 22 & 23 in `R/beetle_data_analyses.R`. Then, run `R/beetle_data_analyses.R`. The parameter estimates will be stored in `cophy_ABC_results/real_para_est.rds`. Visualizations of parameter estimates and posterior predictive checks will be stored in `cophy_ABC_results/beetle_results.pdf`, with examples provided below ($\epsilon_H$ and $\epsilon_S$ are assumed to 0.3, the lines represent the real data, and the dots represent the accepted simulations in the posterior predictive checks panels):
 
 <div align="center">
     <img src=images/img1.png width="800">
