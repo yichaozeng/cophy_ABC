@@ -18,9 +18,8 @@ The tutorial provided here is the full procedure to estimate speciation rates fr
 ## Table of Contents
 - [Setup]
 - [Simulating cophylogenies from the prior distribution](#simulating-cophylogenies)
-- [ABC](#abc)
-- [BLenD curve as summary statistics](#blend-curve-as-summary-statistics)
 - [Performance test](#performance-test)
+- [Application to real data](#abc)
 - [References](#references)
 - [Citation](#citation)
 - [Contact](#contact)
@@ -29,7 +28,7 @@ The tutorial provided here is the full procedure to estimate speciation rates fr
 The provided code works on a cluster running on SLURM. The `batch_command` folder contain commands you can copy and paste into your SSH terminal. The `SLURM` folder contain scripts with which to submit your jobs. The `R` folder contain the R scripts you will need to run the analyses. Before starting, put all three folders in your working directory.
 
 ## Simulating cophylogenies from the prior distribution
-True speciation rates are randoml drawn from the prior distribution to simulate the prior set of cophylogenies
+True speciation rates are randoml drawn from the prior distribution to simulate the prior set of cophylogenies:
 
 $$
 \lambda_H \sim \mathrm{Exp}(0.5), \lambda_S \sim \mathrm{Exp}(0.5)
@@ -44,7 +43,10 @@ When your simulations are complete, run `R/archive_older_data.R` to put all simu
 
 If needed, the assumed relative extinction rates ($\epsilon_H$ for the hosts and $\epsilon_S$ for the symbionts) can be modifed in `R/cophy_sim_system.R`. The prior distributions of parameters can be modified in `R/cophy_sim.R`.
 
-## ABC
+## Performance test
+We....
+
+## Application to real data
 The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rds`. The host and symbiont trees meet these requirements:
 1. Both contains a root edge (branch).
 2. Both trees are of the same height (from the root to the tips, including the length of the root edge).
@@ -65,55 +67,6 @@ Posterior predictive checks (where the line represents the real data, and the do
 <div align="center">
     <img src=images/img2.png width="600">
 </div>
-
-## BLenD curve as summary statistics
-This section is only intended for those interested in understanding how the newly designed summary statistics work - the user do not need to understand this to use the ABC. The new design of summary statistics, the BLenD (Branch Length Difference) curve, is a density curve of $\delta$. $\delta$ is defined as
-
-$$
-\delta=\frac{l_H-l_S}{L}
-$$
-
-for each association in the cophylogeny (Panel a in the figure below).
-<div align="center">
-    <img src=images/img_blend.png width="300">
-</div>
-
-Thus, when there are two cophylogenies, the distance between the two cophylogenies can be defined as the area between their BLenD curves (shaded area in Panel b in the figure above). In the ABC procedure described in the previous sections, the BLenD curve is implemented as part of the `SS_norm` function in `R/functions.R`. A standalone implementation is presented below for clarity:
-
-```r
-# a function for getting the branch length of a tip
-get_BL <- function(tree, tip_name){
-  return(
-    tree$edge.length[tree$edge[,2] == which(tree$tip.label == tip_name)]
-  )
-}
-
-# BLenD summary statistics can be computed from these three objects
-tree1 <- cophy[[1]] # the host tree
-tree2 <- cophy[[2]] # the symbiont tree
-net <- cophy[[3]] # the network (associations between hosts and symbionts)
-
-# first, prune host tree to keep only extant tips
-tree1 <- keep.tip(tree1, rownames(net))
-tree2 <- keep.tip(tree2, colnames(net))
-
-# find all associations (host-to-symbiont pairs)
-net_long <- melt(net)
-S_to_S_pairs <- net_long[net_long$value == 1, 1:2]
-
-# compute the branch lengths
-S_to_S_pairs$BL1 <- apply(S_to_S_pairs, MARGIN = 1, function(x) get_BL(tree1, x[1])) # for the host tips
-S_to_S_pairs$BL2 <- apply(S_to_S_pairs, MARGIN = 1, function(x) get_BL(tree2, x[2])) # for the symbiont tips
-
-# the difference
-S_to_S_pairs$div_time_diff <- S_to_S_pairs$BL1 - S_to_S_pairs$BL2
-
-# obtain the BLenD density curve
-dens <- density(S_to_S_pairs$div_time_diff, from = -1, to = 1)
-```
-
-## Performance test
-We....
 
 ## References
 Dismukes, W., & Heath, T. A. (2021). treeducken: An R package for simulating cophylogenetic systems. Methods in Ecology and Evolution, 12(8), 1358-1364.
