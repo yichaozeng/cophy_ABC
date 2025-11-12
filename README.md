@@ -32,10 +32,10 @@ The provided code works on a cluster running on SLURM. The `batch_command` folde
 True speciation rates are randoml drawn from the prior distribution to simulate the prior set of cophylogenies
 
 $$
-\[\lambda_H \sim \mathrm{Exp}(0.5), \lambda_S \sim \mathrm{Exp}(0.5),\]
+\lambda_H \sim \mathrm{Exp}(0.5), \lambda_S \sim \mathrm{Exp}(0.5)
 $$
 $$
-\[\lambda_C \sim \mathrm{Exp}(1.2), \lambda_W \sim \mathrm{Exp}(0.5).\]
+\lambda_C \sim \mathrm{Exp}(1.2), \lambda_W \sim \mathrm{Exp}(0.5)
 $$
 
 Cophylogenies are simulated with the `sim_cophyBD` function from the `treeducken` package (Dismukes & Heath 2022). We start by creating several folders named `ex_cophy_sims`, `ex_cophy_plots`, `ex_cophy_statistics`, `ex_cophy_checks`, `ex_cophy_convergence`, and `ex_cophy_results` in yout working directory. Then, run `R/cophy_sim_system.R`. The R script is written in a way that avoids new simulations to overwrite older ones, so you can run this R script simultanesouly on multiple jobs to generate large numbers of simulations in a relatively short period of time.
