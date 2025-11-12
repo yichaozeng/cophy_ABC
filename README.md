@@ -45,7 +45,15 @@ When your simulations are complete, run `R/archive_older_data.R` to put all simu
 If needed, the assumed relative extinction rates ($\epsilon_H$ for the hosts and $\epsilon_S$ for the symbionts) can be modifed in `R/cophy_sim_system.R`. The prior distributions of parameters can be modified in `R/cophy_sim.R`.
 
 ## Performance test
-The performance of the ABC is tested againt a total of 1000 parameterizations randomly drawn from the prior distribution. To do this, run `R/relative_error_tree_size.R`.
+The performance of the ABC is tested againt a total of 1000 parameterizations randomly drawn from the prior distribution. To do this, run `R/relative_error_tree_size.R`. This allows the quantification of the relative error of the parameter estimates as
+$$
+\frac{|\bar{\hat{\theta}}-\theta|}{\theta}
+$$
+where $\bar{\hat{\theta}}$ is the mean of the parameter estimates and $\theta$ is the true value. Similarly, a z-score (unsigned) is be quantified as
+$$
+\frac{|\bar{\hat{\theta}}-\theta|}{\hat{\sigma}}
+$$
+where $\hat{\sigma}$ is the standard deviation of the parameter estimates.
 
 ## Application to real data
 The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rds`. The host and symbiont trees meet these requirements:
