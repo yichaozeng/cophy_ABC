@@ -16,7 +16,7 @@ For the user's information, some parameters are assigned a different name in the
 The tutorial provided here is the full procedure to estimate speciation rates from a given cophylogeny, using the BLenD-a / BLenD-b curves and tree sizes as summary statistics. This procedure is illustrated with a re-analysis of the cophylogenetic dataset from Van Dam et al. (2024). 
 
 ## Table of Contents
-- [Setup]
+- [Setup](#setup)
 - [Simulating cophylogenies from the prior distribution](#simulating-cophylogenies)
 - [Performance test](#performance-test)
 - [Application to real data](#abc)
