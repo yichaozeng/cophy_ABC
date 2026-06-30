@@ -36,16 +36,19 @@ The tutorial provided here is the full procedure to estimate macroevolutionary r
 - [Contact](#contact)
 
 ## Setup
-The provided code works on a cluster running on SLURM. The `batch_command` folder contain commands you can copy and paste into your SSH terminal. The `SLURM` folder contain scripts with which to submit your jobs. The `R` folder contain the R scripts you will need to run the analyses. Before starting, put all three folders in your working directory.
+The provided code works on a cluster running on SLURM. The `batch_command` folder contain commands you can copy and paste into your SSH terminal. The `SLURM` folder contain scripts for job submissions. The `R` folder contain the R scripts you will need to run the analyses. Before starting, put all three folders in your working directory.
 
 ## Simulating cophylogenies from the prior distribution
-True speciation rates are randoml drawn from the prior distribution to simulate the prior set of cophylogenies:
+True speciation and extinction rates are randomly drawn from the prior distribution to simulate the prior set of cophylogenies:
 
 $$
-\lambda_H \sim \mathrm{Exp}(0.5),\ \lambda_S \sim \mathrm{Exp}(0.5)
+\lambda_H \sim \mathrm{Exp}(0.5),\ \lambda_S \sim \mathrm{Exp}(0.5),\ \lambda_C \sim \mathrm{Exp}(1.2),\ \lambda_W \sim \mathrm{Exp}(0.5)
 $$
 $$
-\lambda_C \sim \mathrm{Exp}(1.2),\ \lambda_W \sim \mathrm{Exp}(0.5)
+
+$$
+$$
+\epsilon_H \sim \mathrm{Beta}(1, 2),\ \epsilon_S \sim \mathrm{Exp}(1, 2)
 $$
 
 Cophylogenies are simulated with the `sim_cophyBD` function from the `treeducken` package (Dismukes & Heath 2022). We start by creating several folders named `ex_cophy_sims`, `ex_cophy_plots`, `ex_cophy_statistics`, `ex_cophy_checks`, `ex_cophy_convergence`, and `ex_cophy_results` in yout working directory. Then, run `R/cophy_sim_system.R`. The R script is written in a way that avoids new simulations to overwrite older ones, so you can run this R script simultanesouly on multiple jobs to generate large numbers of simulations in a relatively short period of time.
