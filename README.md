@@ -73,14 +73,10 @@ where $\hat{\sigma}$ is the standard deviation of the parameter estimates.
 ## Application to real data
 The real data from Van Dam et al. (2024) is stored in `R/real_data/cophy_real.rds`. The host and symbiont trees meet the requirement that both the host and symbiont tree have been time-calibrated to the same time unit (Myr for example).
 
-<div align="center">
-    <img src=images/img_beetle.png width="800">
-</div>
-
-To perform the ABC for this real cophylogenetic dataset with the simulations that we generated in the last step, run `R/beetle_data_analyses_separate_prior_posterior.R`. The parameter estimates will be stored in `cophy_ABC_results/real_para_est.rds`. Visualizations of parameter estimates and posterior predictive checks will be stored in `cophy_ABC_results/beetle_results.pdf`, `cophy_ABC_results/pair_relative.pdf`, and `cophy_ABC_results/pair_absolute.pdf`, with examples provided below (blue represents the real data, red represents the accepted simulations, and gray represents all simulates):
+To perform the ABC for this real cophylogenetic dataset with the simulations that we generated in the last step, run `R/beetle_data_analyses_separate_prior_posterior.R`. The parameter estimates will be stored in `cophy_ABC_results/real_para_est.rds`. Visualizations of parameter estimates and posterior predictive checks will be stored in `cophy_ABC_results/beetle_results.pdf`, `cophy_ABC_results/pair_relative.pdf`, and `cophy_ABC_results/pair_absolute.pdf`, with the visualization of the results shown below (blue represents the real data, red represents the accepted simulations, and gray represents all simulates):
 
 <div align="center">
-    <img src=images/img1.png width="800">
+    <img src=images/readme.png width="800">
 </div>
 
 ## BLenD curve as summary statistics
