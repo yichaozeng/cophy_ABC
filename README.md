@@ -1,7 +1,7 @@
 # Macroevolutionary rate estimation from cophylogenies using Approximate Bayesian Computation
 
 ## Description
-This project presents an Approximate Bayesian Computation (ABC) approach to estimating speciation rates from cophylogenetic systems. The rates of four types of speciation can be inferred: host speciation ($\lambda_H$), symbiont speciation without host switching ($\lambda_S$), cospeciation ($\lambda_C$), and symbiont speciation with host switching ($\lambda_W$). This approach does not infer the rates of host extinction and symbiont extinction separately. Instead, it assumes that the relative extinctin rates ($\epsilon_H$ for the hosts and $\epsilon_S$ for the symbionts) are known. Under this assumption, the absolute extinction rates ($\mu_H$ for the hosts and $\mu_S$ for the symbionts) can be obtained by 
+This project presents an Approximate Bayesian Computation (ABC) approach to estimating speciation and extinction rates from cophylogenetic systems. The rates of four types of speciation and two types of extinction can be inferred: host speciation ($\lambda_H$), symbiont speciation without host switching ($\lambda_S$), cospeciation ($\lambda_C$), symbiont speciation with host switching ($\lambda_W$), host extinction ($\mu_H$), and symbiont extinction ($\mu_S$). The speciation and extinction rates follow:
 
 $$
 \mu_H = \epsilon_H(\lambda_H + \lambda_C)
@@ -11,9 +11,11 @@ $$
 \mu_S = \epsilon_S(\lambda_S + \lambda_C + \lambda_W)
 $$
 
+where ($\epsilon_H$) and ($\epsilon_S$) range between 0 and 1.
+
 For the user's information, some parameters are assigned a different name in the code: $\lambda_W$ - `exp_H`, $\epsilon_H$ - `mu_H_frac`, and $\epsilon_S$ - `mu_S_frac`.
 
-The tutorial provided here is the full procedure to estimate speciation rates from a given cophylogeny, using the BLenD-a / BLenD-b curves and tree sizes as summary statistics. This procedure is illustrated with a re-analysis of the cophylogenetic dataset from Van Dam et al. (2024). 
+The tutorial provided here is the full procedure to estimate macroevolutionary rates from a given cophylogeny, using the BLenD-a / BLenD-b curves and tree sizes as summary statistics. This procedure is illustrated with a re-analysis of the cophylogenetic dataset from Van Dam et al. (2024). 
 
 ## Table of Contents
 - [Setup](#setup)
