@@ -16,7 +16,7 @@ where ($\epsilon_H$) and ($\epsilon_S$) range between 0 and 1.
 We define 
 
 $$
-r = \frac{2\,r_{\mathrm{host}}\,r_{\mathrm{symbiont}}}{r_{\mathrm{host}} + r_{\mathrm{symbiont}}}
+r = \frac{2\*r_{\mathrm{host}}\*r_{\mathrm{symbiont}}}{r_{\mathrm{host}} + r_{\mathrm{symbiont}}}
 $$
 
 For the user's information, some parameters are assigned a different name in the code: $\lambda_W$ - `exp_H`, $\epsilon_H$ - `mu_H_frac`, and $\epsilon_S$ - `mu_S_frac`.
