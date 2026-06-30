@@ -44,9 +44,7 @@ True speciation and extinction rates are randomly drawn from the prior distribut
 $$
 \lambda_H \sim \mathrm{Exp}(0.5),\ \lambda_S \sim \mathrm{Exp}(0.5),\ \lambda_C \sim \mathrm{Exp}(1.2),\ \lambda_W \sim \mathrm{Exp}(0.5)
 $$
-$$
 
-$$
 $$
 \epsilon_H \sim \mathrm{Beta}(1, 2),\ \epsilon_S \sim \mathrm{Exp}(1, 2)
 $$
