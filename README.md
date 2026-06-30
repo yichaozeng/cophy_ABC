@@ -11,7 +11,7 @@ $$
 \mu_S = \epsilon_S(\lambda_S + \lambda_C + \lambda_W)
 $$
 
-where ($\epsilon_H$) and ($\epsilon_S$) range between 0 and 1.
+where $\epsilon_H$ and $\epsilon_S$ range between 0 and 1.
 
 We define the net diversification rate of the cophylogeny as
 
