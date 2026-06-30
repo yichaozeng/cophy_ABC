@@ -2,9 +2,11 @@
 
 ## Description
 This project presents an Approximate Bayesian Computation (ABC) approach to estimating speciation and extinction rates from cophylogenetic systems. The rates of four types of speciation and two types of extinction can be inferred: host speciation ($\lambda_H$), symbiont speciation without host switching ($\lambda_S$), cospeciation ($\lambda_C$), symbiont speciation with host switching ($\lambda_W$), host extinction ($\mu_H$), and symbiont extinction ($\mu_S$). The speciation and extinction rates follow:
+
 $$
 \mu_H = \epsilon_H(\lambda_H + \lambda_C)
 $$
+
 $$
 \mu_S = \epsilon_S(\lambda_S + \lambda_C + \lambda_W)
 $$
@@ -12,9 +14,12 @@ $$
 where ($\epsilon_H$) and ($\epsilon_S$) range between 0 and 1.
 
 We define the net diversification rate of the cophylogeny as
+
 $$
 r = \frac{2\*r_{\mathrm{host}}\*r_{\mathrm{symbiont}}}{r_{\mathrm{host}} + r_{\mathrm{symbiont}}}
 $$
+
+where $\mathrm{host}=\lambda_H + \lambda_C -\mu_H$ and $\mathrm{symbiont}=\lambda_S + \lambda_C + \lambda_W -\mu_S$ are the net diversification rates of the host and symbiont clades, respectively.
 
 For the user's information, some parameters are assigned a different name in the code: $\lambda_W$ - `exp_H`, $\epsilon_H$ - `mu_H_frac`, and $\epsilon_S$ - `mu_S_frac`.
 
