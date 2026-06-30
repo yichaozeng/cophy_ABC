@@ -32,7 +32,7 @@ for(run_id in c(10)){
       print(i)
     }
     
-    abc_cophy <- ABC_taxi(target = SS_real[[i]][SS_sel], param = para_sim_md[-cros_val_ids[i], c('lambda_H', 'lambda_S', 'lambda_C', 'exp_H')], sumstat = as.matrix(SS_sim_md)[-cros_val_ids[i], SS_sel], tol = perc)
+    abc_cophy <- ABC_taxi(target = SS_real[[i]][SS_sel], param = para_sim_md[-cros_val_ids[i], c('lambda_H', 'lambda_S', 'lambda_C', 'exp_H', 'mu_H_frac', 'mu_S_frac')], sumstat = as.matrix(SS_sim_md)[-cros_val_ids[i], SS_sel], tol = perc)
     
     new_dat_sing <- as.data.frame(abc_cophy$unadj.values)
     new_dat_sing$run_name <- rep(run_name, nrow(new_dat_sing))
@@ -46,6 +46,8 @@ for(run_id in c(10)){
     new_dat_sing$lambda_S_true <- rep(para_real[[2]][i], nrow(new_dat_sing))
     new_dat_sing$lambda_C_true <- rep(para_real[[3]][i], nrow(new_dat_sing))
     new_dat_sing$exp_H_true <- rep(para_real[[4]][i], nrow(new_dat_sing))
+    new_dat_sing$mu_H_frac_true <- rep(para_real[[5]][i], nrow(new_dat_sing))
+    new_dat_sing$mu_S_frac_true <- rep(para_real[[6]][i], nrow(new_dat_sing))
 
     new_dat_sing
   }
@@ -66,10 +68,14 @@ if(exists('cros_val') == 1){
   res_dat_comb$lambda_S <- res_dat_comb$lambda_S - res_dat_comb$lambda_S_true
   res_dat_comb$lambda_C <- res_dat_comb$lambda_C - res_dat_comb$lambda_C_true
   res_dat_comb$exp_H <- res_dat_comb$exp_H - res_dat_comb$exp_H_true
+  res_dat_comb$mu_H_frac <- res_dat_comb$mu_H_frac - res_dat_comb$mu_H_frac_true
+  res_dat_comb$mu_S_frac <- res_dat_comb$mu_S_frac - res_dat_comb$mu_S_frac_true
 }else if(exists('real_data_run') == 1){
   res_dat_comb <- para_sim_acc
   res_dat_comb$lambda_H <- res_dat_comb$lambda_H - para_real$lambda_H
   res_dat_comb$lambda_S <- res_dat_comb$lambda_S - para_real$lambda_S
   res_dat_comb$lambda_C <- res_dat_comb$lambda_C - para_real$lambda_C
   res_dat_comb$exp_H <- res_dat_comb$exp_H - para_real$exp_H
+  res_dat_comb$mu_H_frac <- res_dat_comb$mu_H_frac - para_real$mu_H_frac
+  res_dat_comb$mu_S_frac <- res_dat_comb$mu_S_frac - para_real$mu_S_frac
 }

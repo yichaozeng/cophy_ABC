@@ -14,6 +14,8 @@ ratio_plots <- NULL
 file_name <- paste("ex_", 'cophy_ABC_convergence/cross_validation_sizes', '.csv', sep = '')
 rel_err <- read.csv(file_name)
 
+# note that "lambda_H" is the relative error of lambda_H, not the rate estimate
+
 # here, we reverse the relative errors back to absolute errors
 rel_err$lambda_H_abs <- rel_err$lambda_H * rel_err$lambda_H_true
 rel_err$lambda_S_abs <- rel_err$lambda_S * rel_err$lambda_S_true
@@ -21,6 +23,40 @@ rel_err$lambda_C_abs <- rel_err$lambda_C * rel_err$lambda_C_true
 rel_err$exp_H_abs <- rel_err$exp_H * rel_err$exp_H_true
 rel_err$mu_H_frac_abs <- rel_err$mu_H_frac * rel_err$mu_H_frac_true
 rel_err$mu_S_frac_abs <- rel_err$mu_S_frac * rel_err$mu_H_frac_true
+
+# then, we reverse the absolute errors back to estimates
+rel_err$lambda_H_est <- rel_err$lambda_H_abs + rel_err$lambda_H_true
+rel_err$lambda_S_est <- rel_err$lambda_S_abs + rel_err$lambda_S_true
+rel_err$lambda_C_est <- rel_err$lambda_C_abs + rel_err$lambda_C_true
+rel_err$exp_H_est <- rel_err$exp_H_abs + rel_err$exp_H_true
+rel_err$mu_H_frac_est <- rel_err$mu_H_frac_abs + rel_err$mu_H_frac_true
+rel_err$mu_S_frac_est <- rel_err$mu_S_frac_abs + rel_err$mu_S_frac_true
+
+# now we reparameterize
+# estimates
+rel_err$ratio_S_H_est <- rel_err$lambda_S_est / rel_err$lambda_H_est
+rel_err$ratio_C_H_est <- rel_err$lambda_C_est / rel_err$lambda_H_est
+rel_err$ratio_W_H_est <- rel_err$exp_H_est / rel_err$lambda_H_est # exp_H == lambda_W
+rel_err$mu_H_est <- rel_err$mu_H_frac_est * (rel_err$lambda_H_est + rel_err$lambda_C_est)
+rel_err$mu_S_est <- rel_err$mu_S_frac_est * (rel_err$lambda_S_est + rel_err$lambda_C_est + rel_err$exp_H_est)
+# true values
+rel_err$ratio_S_H_true <- rel_err$lambda_S_true / rel_err$lambda_H_true
+rel_err$ratio_C_H_true <- rel_err$lambda_C_true / rel_err$lambda_H_true
+rel_err$ratio_W_H_true <- rel_err$exp_H_true / rel_err$lambda_H_true # exp_H == lambda_W
+rel_err$mu_H_true <- rel_err$mu_H_frac_true * (rel_err$lambda_H_true + rel_err$lambda_C_true)
+rel_err$mu_S_true <- rel_err$mu_S_frac_true * (rel_err$lambda_S_true + rel_err$lambda_C_true + rel_err$exp_H_true)
+# absolute errors
+rel_err$ratio_S_H_abs <- rel_err$ratio_S_H_est - rel_err$ratio_S_H_true
+rel_err$ratio_C_H_abs <- rel_err$ratio_C_H_est - rel_err$ratio_C_H_true
+rel_err$ratio_W_H_abs <- rel_err$ratio_W_H_est - rel_err$ratio_W_H_true
+rel_err$mu_H_abs <- rel_err$mu_H_est - rel_err$mu_H_true
+rel_err$mu_S_abs <- rel_err$mu_S_est - rel_err$mu_S_true
+# relative errors
+rel_err$ratio_S_H <- rel_err$ratio_S_H_abs / rel_err$ratio_S_H_true
+rel_err$ratio_C_H <- rel_err$ratio_C_H_abs / rel_err$ratio_C_H_true
+rel_err$ratio_W_H <- rel_err$ratio_W_H_abs / rel_err$ratio_W_H_true
+rel_err$mu_H <- rel_err$mu_H_abs / rel_err$mu_H_true
+rel_err$mu_S <- rel_err$mu_S_abs / rel_err$mu_S_true
 
 # averaging function for every X rows
 aver <- function(vec, every){
@@ -91,10 +127,12 @@ rel_err_aver_prior <- data.frame(
   # blend_2_size = aver(rel_err$blend_2_size, every)
 )
 
-for (parameter in 1:6) {
+for (parameter in 1:11) {
   
   preds_prior_post <- NULL
   labels_prior_post <- NULL
+  
+  ribbon_prior_post <- NULL
   
   for (temp_id in 1:2) {
     
@@ -130,8 +168,8 @@ for (parameter in 1:6) {
     # mod <- lm(y ~ x, data = df)
     # df_pred <- cbind(df, predict(mod, interval = "prediction", level = 0.90))
     
-    # qs <- c(0.25, 0.5, 0.75)
-    qs <- c(0.2, 0.5, 0.8)
+    # qs <- c(0.2, 0.5, 0.80)
+    qs <- c(0.2, 0.5, 0.80)
     
     # Create a sequence of x values for smooth prediction
     x_seq <- seq(min(df$x), max(df$x), length.out = 200)
@@ -157,6 +195,13 @@ for (parameter in 1:6) {
     preds <- preds[preds$n_local >= 90, ]
     preds_prior_post[[length(preds_prior_post) + 1]] <- preds
     
+    ribbon <- data.frame(
+      x = preds$x[preds$quantile == qs[1]],
+      ymin = preds$y[preds$quantile == qs[1]],
+      ymax = preds$y[preds$quantile == qs[length(qs)]]
+    )
+    ribbon_prior_post[[length(ribbon_prior_post) + 1]] <- ribbon
+    
     # Extract end points for labeling
     labels <- preds %>%
       group_by(quantile) %>%
@@ -178,29 +223,50 @@ for (parameter in 1:6) {
   err_plots[[length(err_plots) + 1]] <- ggplot(df, aes(x = x, y = y)) +
     # geom_point(size = 1, alpha = 1, color = point_color) +
     # geom_hex(bins = 20) +
-    # geom_point(size = 1.8, alpha = 0.5)
+    # geom_point(size = 1.8, alpha = 0.9)
     # scale_fill_viridis(option="viridis") +
     # scale_fill_viridis(option="viridis", limits = c(0, 22)) +
-    # geom_hline(yintercept = 0, linetype = "dashed", color = "gray", linewidth = 0.5) +
-    geom_line(
-      data = preds_prior_post[[1]],
-      aes(y = y, group = quantile),
-      linewidth = 0.5,
-      linetype = "dashed",
-      color = 'black'
+    # geom_hline(yintercept = 0, linetype = "dotted", color = "gray", linewidth = 0.5) +
+    geom_ribbon(
+      data = ribbon_prior_post[[1]],
+      aes(x = x, ymin = ymin, ymax = ymax),
+      fill = "black",
+      alpha = 0.75,
+      inherit.aes = FALSE
+    ) +
+    geom_ribbon(
+      data = ribbon_prior_post[[2]],
+      aes(x = x, ymin = ymin, ymax = ymax),
+      fill = c(
+        "#F28E2B",#"#B1CAE1",
+        "#F28E2B",
+        "#F28E2B",#"#E15759",
+        "#F28E2B",#"#76B7B2",
+        "#F28E2B",#"#B07AA1",
+        "#F28E2B"#"#59A14F"
+      )[parameter],
+      alpha = 0.6, #0.4,
+      inherit.aes = FALSE
     ) +
     geom_line(
       data = preds_prior_post[[2]],
       aes(y = y, group = quantile),
-      linewidth = 1,
+      linewidth = 0.7,
       color = c(
-        "#F28E2B",#"#4E79A7",
+        "#F28E2B",#"#B1CAE1",
         "#F28E2B",
         "#F28E2B",#"#E15759",
         "#F28E2B",#"#76B7B2",
         "#F28E2B",#"#B07AA1",
         "#F28E2B"#"#59A14F"
       )[parameter]
+    ) +
+    geom_line(
+      data = preds_prior_post[[1]],
+      aes(y = y, group = quantile),
+      linewidth = 0.5,
+      linetype = "dotted",
+      color = 'black'
     ) +
     geom_text(
       data = labels_prior_post[[1]],
@@ -212,7 +278,7 @@ for (parameter in 1:6) {
       data = labels_prior_post[[2]],
       aes(y = y, label = label),
       hjust = -0.1, size = 3, color = c(
-        "#F28E2B",#"#4E79A7",
+        "#F28E2B",#"#B1CAE1",
         "#F28E2B",
         "#F28E2B",#"#E15759",
         "#F28E2B",#"#76B7B2",
@@ -227,7 +293,7 @@ for (parameter in 1:6) {
       labels = expression(10^0, 10^1, 10^2, 10^3)
     ) +
     # ylim(0, 2) +
-    ylim(0, 3.2) +
+    ylim(0, 2.5) +
     theme_bw() +
     theme(panel.grid = element_blank()) +
     theme(plot.title = element_text(hjust = 0.5)) +
@@ -328,6 +394,8 @@ for (parameter in 1:6) {
   preds_prior_post <- NULL
   labels_prior_post <- NULL
   
+  ribbon_prior_post <- NULL
+  
   for (temp_id in 1:2) {
     
     rel_err_aver <- list(rel_err_aver_prior, rel_err_aver_posterior)[[temp_id ]]
@@ -357,8 +425,8 @@ for (parameter in 1:6) {
     # mod <- lm(y ~ x, data = df)
     # df_pred <- cbind(df, predict(mod, interval = "prediction", level = 0.90))
     
-    # qs <- c(0.25, 0.5, 0.75)
-    qs <- c(0.2, 0.5, 0.8)
+    # qs <- c(0.2, 0.5, 0.80)
+    qs <- c(0.2, 0.5, 0.80)
     
     # Create a sequence of x values for smooth prediction
     x_seq <- seq(min(df$x), max(df$x), length.out = 200)
@@ -384,6 +452,13 @@ for (parameter in 1:6) {
     preds <- preds[preds$n_local >= 90, ]
     preds_prior_post[[length(preds_prior_post) + 1]] <- preds
     
+    ribbon <- data.frame(
+      x = preds$x[preds$quantile == qs[1]],
+      ymin = preds$y[preds$quantile == qs[1]],
+      ymax = preds$y[preds$quantile == qs[length(qs)]]
+    )
+    ribbon_prior_post[[length(ribbon_prior_post) + 1]] <- ribbon
+    
     # Extract end points for labeling
     labels <- preds %>%
       group_by(quantile) %>%
@@ -404,26 +479,40 @@ for (parameter in 1:6) {
   
   err_plots[[length(err_plots) + 1]] <- ggplot(df, aes(x = x, y = y)) +
     # geom_hex(bins = 20) +
-    # geom_point(size = 1.8, alpha = 0.5)
+    # geom_point(size = 1.8, alpha = 0.9)
     # geom_smooth(data = subset(df, x >= quantile(df$x, 0) & x <= quantile(df$x, 1)), method = "loess", color = "white", linewidth = 0.9, se = FALSE) +
     # scale_fill_viridis(option="magma") +
     # scale_fill_viridis(option="magma", limits = c(0, 32)) +
     # geom_ribbon(aes(ymin = lwr, ymax = upr),
-    #             fill = "chocolate", alpha = 0.2) +
+    #             fill = "chocolate", alpha = 0.75) +
     # geom_point(aes(y = y)) +
     # geom_line(aes(y = fit), colour = "chocolate", size = 1) +
     #geom_smooth(aes(y = y), method = "loess", se = TRUE, level = 0.95, color = "chocolate", fill = "lightchocolate") +
-    geom_line(
-      data = preds_prior_post[[1]],
-      aes(y = y, group = quantile),
-      linewidth = 0.5,
-      color = 'black',
-      linetype = 'dashed'
+    geom_ribbon(
+      data = ribbon_prior_post[[1]],
+      aes(x = x, ymin = ymin, ymax = ymax),
+      fill = "black",
+      alpha = 0.75,
+      inherit.aes = FALSE
+    ) +
+    geom_ribbon(
+      data = ribbon_prior_post[[2]],
+      aes(x = x, ymin = ymin, ymax = ymax),
+      fill = c(
+        "#B1CAE1",
+        "#B1CAE1",#"#F28E2B",
+        "#B1CAE1",#"#E15759",
+        "#B1CAE1",#"#76B7B2",
+        "#B1CAE1",#"#B07AA1",
+        "#B1CAE1"#"#59A14F"
+      )[parameter],
+      alpha = 0.6, #0.4,
+      inherit.aes = FALSE
     ) +
     geom_line(
       data = preds_prior_post[[2]],
       aes(y = y, group = quantile),
-      linewidth = 1,
+      linewidth = 0.7,
       color = c(
         "#4E79A7",
         "#4E79A7",#"#F28E2B",
@@ -432,6 +521,13 @@ for (parameter in 1:6) {
         "#4E79A7",#"#B07AA1",
         "#4E79A7"#"#59A14F"
       )[parameter]
+    ) +
+    geom_line(
+      data = preds_prior_post[[1]],
+      aes(y = y, group = quantile),
+      linewidth = 0.5,
+      color = 'black',
+      linetype = 'dotted'
     ) +
     geom_text(
       data = labels_prior_post[[1]],
@@ -458,7 +554,7 @@ for (parameter in 1:6) {
       labels = expression(10^0, 10^1, 10^2, 10^3)
     ) +
     # ylim(-3, 2.5) +
-    ylim(-4.5, 4.5) +
+    ylim(-3, 3) +
     theme_bw() +
     theme(panel.grid = element_blank()) +
     theme(plot.title = element_text(hjust = 0.5)) +
@@ -542,7 +638,7 @@ yaabbccddeeff
 
 print('plotting')
 #png(paste(prefix, 'cophy_ABC_convergence/', "convergence_comb", "_", as.character(mu_H_frac), "_", as.character(mu_S_frac), ".png", sep = ''), width = 10, height = 10, units = 'in', pointsize = 12, res = 300)
-pdf(paste('ex_cophy_ABC_convergence/', "fig_4_errors_ratios_regression_20260417", ".pdf", sep = ''), width = 11*0.9, height = 9*0.9, pointsize = 12)
+pdf(paste('ex_cophy_ABC_convergence/', "fig_4_errors_ratios_regression_20260426", ".pdf", sep = ''), width = 11*0.9, height = 9*0.9, pointsize = 12)
 print(wrap_plots(plot_list_fig_4, guides = 'collect', design = layoutplot_fig_4) &
         theme(legend.position = "left",
               legend.text = element_text(size = 8, angle = 0, vjust = 0.5, hjust = 0.5),
@@ -551,3 +647,5 @@ print(wrap_plots(plot_list_fig_4, guides = 'collect', design = layoutplot_fig_4)
               legend.spacing.y = unit(0.1, "cm")
         ))
 dev.off()
+
+

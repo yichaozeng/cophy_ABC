@@ -12,19 +12,16 @@ panels_OG <- NULL
 # panels_OG_percentage <- NULL # this records the percentage of convergence, defined as the percentage of unnormalized cophylogenies that results in parameter convergence
 para_est <- NULL
 
-folder_ids <-  list('27', '87', '78', '40', '90')[[5]] # 0/0, 0.3/0.3, 0.7/0, 0/0.7, 0.7/0.7
-folder_ids_slash <-  list('27/', '87/', '78/', '40/', '90/')[[5]]
-prefix <- "ex_"
-
 # allow simulations from two or more folders to be loaded
 SS_comb <- NULL
 para_dat_separate_comb <- NULL
 
-# this loop helps you read in the simulations if they are stored across multiple folders
-for (pos in 1:length(folder_ids)) {
+for (folder_id in c('')) {
   
-  folder_id <- folder_ids[pos]
-  folder_id_slash <- folder_ids_slash[pos]
+  print(folder_id)
+  
+  folder_id_slash <- paste(folder_id, '/', sep = '')
+  prefix <- "ex_"
   
   setwd("/home/u29/yichaozeng/Desktop")
   source('cophy_ABC/R/parameter_distribution.R')
@@ -38,7 +35,7 @@ for (pos in 1:length(folder_ids)) {
   para_dat_separate_comb <- rbind(para_dat_separate_comb, para_dat_separate)
   
 }
-
+  
 para_dat_separate <- para_dat_separate_comb
 
 # (maybe optional) rescale the summary statistics
@@ -85,18 +82,6 @@ SS_sel <- list(
   c(1:300, 301:302) # combined
 )[[3]]
 
-# # here, draw the true rates in a monte-carlo manner
-# lambda_H_real <- runif(1, min = 0, max = 2)
-# lambda_S_real <- runif(1, min = 0, max = 2)
-# lambda_C_real <- runif(1, min = 0, max = 2)
-# exp_H_real <- runif(1, min = 0, max = 2)
-
-# here, draw the true rates in a grid-based manner
-# lambda_H_real <- c(0.1, 1, 1.9)[1]
-# lambda_S_real <- c(0.1, 1, 1.9)[1]
-# lambda_C_real <- c(0.1, 1, 1.9)[1]
-# exp_H_real <- c(0.1, 1, 1.9)[1]
-
 # the "survival rates"
 surv_H <- 1 - mu_H_frac
 surv_S <- 1 - mu_S_frac
@@ -109,20 +94,22 @@ n_rep_cophy <- 100
 
 cros_val <- 1
 
-cros_val_ids <- 1:n_test_set * n_rep_cophy # the indices of the SS chosen as "true" SS
+cros_val_ids <- sample(1: (nrow(para_dat_separate_comb) / n_rep_cophy) ,n_test_set) * n_rep_cophy # the indices of the SS chosen as "true" SS
 
 source('cophy_ABC/R/ABC_parameter_estimation.R')
 
 source('cophy_ABC/R/convergence_checks.R')
 setwd("/groups/cromanpa/yzeng")
 
-# run this line if you want to use relative rather than absolute errors
+# use the relative error for speciation rates and extinction fractions
 res_dat_comb$lambda_H <- res_dat_comb$lambda_H / res_dat_comb$lambda_H_true
 res_dat_comb$lambda_S <- res_dat_comb$lambda_S / res_dat_comb$lambda_S_true
 res_dat_comb$lambda_C <- res_dat_comb$lambda_C / res_dat_comb$lambda_C_true
 res_dat_comb$exp_H <- res_dat_comb$exp_H / res_dat_comb$exp_H_true
+res_dat_comb$mu_H_frac <- res_dat_comb$mu_H_frac / res_dat_comb$mu_H_frac_true
+res_dat_comb$mu_S_frac <- res_dat_comb$mu_S_frac / res_dat_comb$mu_S_frac_true
 
 rel_err <- res_dat_comb
 
-file_name <- paste(prefix, 'cophy_ABC_convergence/cross_validation_sizes',"_", as.character(mu_H_frac), "_", as.character(mu_S_frac), '.csv', sep = '')
+file_name <- paste(prefix, 'cophy_ABC_convergence/cross_validation_sizes', '.csv', sep = '')
 write.csv(rel_err, file_name)

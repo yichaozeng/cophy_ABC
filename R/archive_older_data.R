@@ -31,9 +31,9 @@ for (lab2 in c('/')) {
     dir.create(new_folder_path)
     
     # move the files into the folder
-    if(lab1 != '_convergence'){
+    # if(lab1 != '_convergence'){
       lapply(all_file_names_file_only, function(x) file.rename(paste(folder_path, x, sep = ''), paste(new_folder_path, x, sep = '')))
-    }
+    # }
     
   }
 }

@@ -6,6 +6,9 @@ registerDoParallel(cores=n.cores - 3)
 
 library(rlist)
 
+n_prior_set <- 12000
+# n_prior_set <- 1200 # for testing
+
 setwd("/home/u29/yichaozeng/Desktop")
 source('cophy_ABC/R/functions.R')
 
@@ -21,7 +24,7 @@ folder_path <- paste(prefix, "cophy_ABC_sims/", folder_id, sep = '')
 
 all_file_names <- as.list(list.files(path = folder_path))
 # remove names belonging to folders
-all_file_names <- all_file_names[unlist(lapply(all_file_names, function(x) nchar(x)>8))][1:12000]
+all_file_names <- all_file_names[unlist(lapply(all_file_names, function(x) nchar(x)>8))][1:n_prior_set]
 
 
 SS_para_list <- foreach(i = 1: length(all_file_names)) %dopar% {

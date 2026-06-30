@@ -96,6 +96,8 @@ for (parameter in 1:6) {
   preds_prior_post <- NULL
   labels_prior_post <- NULL
   
+  ribbon_prior_post <- NULL
+  
   for (temp_id in 1:2) {
     
     rel_err_aver <- list(rel_err_aver_prior, rel_err_aver_posterior)[[temp_id ]]
@@ -131,7 +133,7 @@ for (parameter in 1:6) {
     # df_pred <- cbind(df, predict(mod, interval = "prediction", level = 0.90))
     
     # qs <- c(0.25, 0.5, 0.75)
-    qs <- c(0.2, 0.5, 0.8)
+    qs <- c(0.1, 0.5, 0.9)
     
     # Create a sequence of x values for smooth prediction
     x_seq <- seq(min(df$x), max(df$x), length.out = 200)
@@ -156,6 +158,13 @@ for (parameter in 1:6) {
     # keep only prediction based on high densities
     preds <- preds[preds$n_local >= 90, ]
     preds_prior_post[[length(preds_prior_post) + 1]] <- preds
+    
+    ribbon <- data.frame(
+      x = preds$x[preds$quantile == qs[1]],
+      ymin = preds$y[preds$quantile == qs[1]],
+      ymax = preds$y[preds$quantile == qs[length(qs)]]
+    )
+    ribbon_prior_post[[length(ribbon_prior_post) + 1]] <- ribbon
     
     # Extract end points for labeling
     labels <- preds %>%
@@ -189,6 +198,13 @@ for (parameter in 1:6) {
       linetype = "dashed",
       color = 'black'
     ) +
+    geom_ribbon(
+      data = ribbon_prior_post[[1]],
+      aes(x = x, ymin = ymin, ymax = ymax),
+      fill = "black",
+      alpha = 0.2,
+      inherit.aes = FALSE
+    ) +
     geom_line(
       data = preds_prior_post[[2]],
       aes(y = y, group = quantile),
@@ -201,6 +217,20 @@ for (parameter in 1:6) {
         "#F28E2B",#"#B07AA1",
         "#F28E2B"#"#59A14F"
       )[parameter]
+    ) +
+    geom_ribbon(
+      data = ribbon_prior_post[[2]],
+      aes(x = x, ymin = ymin, ymax = ymax),
+      fill = c(
+        "#F28E2B",#"#4E79A7",
+        "#F28E2B",
+        "#F28E2B",#"#E15759",
+        "#F28E2B",#"#76B7B2",
+        "#F28E2B",#"#B07AA1",
+        "#F28E2B"#"#59A14F"
+      )[parameter],
+      alpha = 0.4,
+      inherit.aes = FALSE
     ) +
     geom_text(
       data = labels_prior_post[[1]],
@@ -227,7 +257,7 @@ for (parameter in 1:6) {
       labels = expression(10^0, 10^1, 10^2, 10^3)
     ) +
     # ylim(0, 2) +
-    ylim(0, 3.2) +
+    ylim(0, 3.5) +
     theme_bw() +
     theme(panel.grid = element_blank()) +
     theme(plot.title = element_text(hjust = 0.5)) +
@@ -328,6 +358,8 @@ for (parameter in 1:6) {
   preds_prior_post <- NULL
   labels_prior_post <- NULL
   
+  ribbon_prior_post <- NULL
+  
   for (temp_id in 1:2) {
     
     rel_err_aver <- list(rel_err_aver_prior, rel_err_aver_posterior)[[temp_id ]]
@@ -358,7 +390,7 @@ for (parameter in 1:6) {
     # df_pred <- cbind(df, predict(mod, interval = "prediction", level = 0.90))
     
     # qs <- c(0.25, 0.5, 0.75)
-    qs <- c(0.2, 0.5, 0.8)
+    qs <- c(0.1, 0.5, 0.9)
     
     # Create a sequence of x values for smooth prediction
     x_seq <- seq(min(df$x), max(df$x), length.out = 200)
@@ -383,6 +415,13 @@ for (parameter in 1:6) {
     # keep only prediction based on high densities
     preds <- preds[preds$n_local >= 90, ]
     preds_prior_post[[length(preds_prior_post) + 1]] <- preds
+    
+    ribbon <- data.frame(
+      x = preds$x[preds$quantile == qs[1]],
+      ymin = preds$y[preds$quantile == qs[1]],
+      ymax = preds$y[preds$quantile == qs[length(qs)]]
+    )
+    ribbon_prior_post[[length(ribbon_prior_post) + 1]] <- ribbon
     
     # Extract end points for labeling
     labels <- preds %>%
@@ -420,6 +459,13 @@ for (parameter in 1:6) {
       color = 'black',
       linetype = 'dashed'
     ) +
+    geom_ribbon(
+      data = ribbon_prior_post[[1]],
+      aes(x = x, ymin = ymin, ymax = ymax),
+      fill = "black",
+      alpha = 0.2,
+      inherit.aes = FALSE
+    ) +
     geom_line(
       data = preds_prior_post[[2]],
       aes(y = y, group = quantile),
@@ -432,6 +478,20 @@ for (parameter in 1:6) {
         "#4E79A7",#"#B07AA1",
         "#4E79A7"#"#59A14F"
       )[parameter]
+    ) +
+    geom_ribbon(
+      data = ribbon_prior_post[[2]],
+      aes(x = x, ymin = ymin, ymax = ymax),
+      fill = c(
+        "#4E79A7",
+        "#4E79A7",#"#F28E2B",
+        "#4E79A7",#"#E15759",
+        "#4E79A7",#"#76B7B2",
+        "#4E79A7",#"#B07AA1",
+        "#4E79A7"#"#59A14F"
+      )[parameter],
+      alpha = 0.4,
+      inherit.aes = FALSE
     ) +
     geom_text(
       data = labels_prior_post[[1]],
@@ -458,7 +518,7 @@ for (parameter in 1:6) {
       labels = expression(10^0, 10^1, 10^2, 10^3)
     ) +
     # ylim(-3, 2.5) +
-    ylim(-4.5, 4.5) +
+    ylim(-3.5, 4) +
     theme_bw() +
     theme(panel.grid = element_blank()) +
     theme(plot.title = element_text(hjust = 0.5)) +
@@ -524,25 +584,29 @@ plot_list_fig_4 <- list(
 )
 
 layoutplot_fig_4 <- "
-YAABBCCDDEEFF
-YAABBCCDDEEFF
-YAABBCCDDEEFF
-YAABBCCDDEEFF
-YAABBCCDDEEFF
-YAABBCCDDEEFF
-#XXXXXXXXXXXX
-yaabbccddeeff
-yaabbccddeeff
-yaabbccddeeff
-yaabbccddeeff
-yaabbccddeeff
-yaabbccddeeff
-#xxxxxxxxxxxx
+YAABBCC
+YAABBCC
+YAABBCC
+YAABBCC
+YDDEEFF
+YDDEEFF
+YDDEEFF
+YDDEEFF
+#XXXXXX
+yaabbcc
+yaabbcc
+yaabbcc
+yaabbcc
+yddeeff
+yddeeff
+yddeeff
+yddeeff
+#xxxxxx
 "
 
 print('plotting')
 #png(paste(prefix, 'cophy_ABC_convergence/', "convergence_comb", "_", as.character(mu_H_frac), "_", as.character(mu_S_frac), ".png", sep = ''), width = 10, height = 10, units = 'in', pointsize = 12, res = 300)
-pdf(paste('ex_cophy_ABC_convergence/', "fig_4_errors_ratios_regression_20260417", ".pdf", sep = ''), width = 11*0.9, height = 9*0.9, pointsize = 12)
+pdf(paste('ex_cophy_ABC_convergence/', "fig_4_errors_ratios_regression_20260417", ".pdf", sep = ''), width = 11*0.9, height = 12*0.9, pointsize = 12)
 print(wrap_plots(plot_list_fig_4, guides = 'collect', design = layoutplot_fig_4) &
         theme(legend.position = "left",
               legend.text = element_text(size = 8, angle = 0, vjust = 0.5, hjust = 0.5),

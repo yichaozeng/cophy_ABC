@@ -6,7 +6,6 @@ library(patchwork)
 library(GGally)
 library(ggridges)
 library(ggpubr)
-library(ggbreak)
 library(dplyr)
 
 sim_time <- 2 # this is the time of simulations
@@ -19,8 +18,8 @@ para_est <- NULL
 SS_est <- NULL
 panels_OG <- NULL
 
-folder_ids <-  ''
-folder_ids_slash <-  '/'
+folder_ids <-  '81'
+folder_ids_slash <-  '81/'
 prefix <- "ex_"
 
 # allow simulations from two or more folders to be loaded
@@ -123,9 +122,15 @@ ext_cl <- c(
 )
 
 # here we convert the speciation rates back to events/Myr
-rate_spec$rate <- rate_spec$rate * sim_time / 27.5 # essentially this gives you the number of each type of events per lineage
+cophy_real_true_scale <- cophy_real
+cophy_real_true_scale[[1]][[1]]$edge.length <- cophy_real[[1]][[1]]$edge.length / 2 * 27.5 # reverse the previous scaling
+cophy_real_true_scale[[1]][[1]]$root.edge <- cophy_real[[1]][[1]]$root.edge / 2 * 27.5
 
-# rate_spec$rate <- rate_spec$rate * sim_time # essentially this gives you the number of each type of events per lineage
+cophy_real_true_scale[[1]][[2]]$edge.length <- cophy_real[[1]][[2]]$edge.length / 2 * 27.5 # reverse the previous scaling
+cophy_real_true_scale[[1]][[2]]$root.edge <- cophy_real[[1]][[2]]$root.edge / 2 * 27.5
+
+scale_factor <- max(max(nodeHeights(cophy_real_true_scale[[1]][[1]])), max(nodeHeights(cophy_real_true_scale[[1]][[2]]))) / sim_time
+rate_spec$rate <- rate_spec$rate / scale_factor
 
 spec_stats <- rate_spec %>%
   group_by(event) %>%
@@ -134,7 +139,7 @@ spec_stats <- rate_spec %>%
     sd   = sd(rate)
   )
 spec_stats <- spec_stats %>%
-  mutate(label = sprintf("%.2f ± %.2f", mean, sd))
+  mutate(label = sprintf("mean = %.3f\nsd = %.3f", mean, sd))
 
 ext_stats <- rate_ext %>%
   group_by(event) %>%
@@ -143,7 +148,7 @@ ext_stats <- rate_ext %>%
     sd   = sd(rate)
   )
 ext_stats <- ext_stats %>%
-  mutate(label = sprintf("%.2f ± %.2f", mean, sd))
+  mutate(label = sprintf("mean = %.3f\nsd = %.3f", mean, sd))
 
 
 spec_plot <- ggplot(rate_spec, aes(x = rate, y = event, height = after_stat(density))) +
@@ -157,8 +162,8 @@ spec_plot <- ggplot(rate_spec, aes(x = rate, y = event, height = after_stat(dens
       ),
     expand = expansion(add = c(0.5, 1))
     ) +
-  # xlim(, ) +
-  labs(title = "Speciation rate estimates", x = "events/lineage/time", y = NULL) +
+  xlim(-1 / scale_factor, 8.3 / scale_factor) +
+  labs(title = "Speciation rate estimates", x = "events/lineage/Myr", y = NULL) +
   scale_fill_manual(
     values = spec_cl,
   ) +
@@ -169,11 +174,10 @@ spec_plot <- ggplot(rate_spec, aes(x = rate, y = event, height = after_stat(dens
   theme(plot.title = element_text(hjust = 0.5))
 
 spec_plot <- spec_plot +
-  labs(title = NULL, x =  "events/lineage/Myr", y = NULL) +
-  xlim(-1* sim_time / 27.5, 6* sim_time / 27.5) +
+  labs(title = NULL, x =  "events/lineage/Myr", y = NULL) + xlim(-0.15, 0.7) +
   geom_text(
     data = spec_stats,
-    aes(x = mean + sd, y = event, label = label),
+    aes(x = mean + sd + 0.05, y = event, label = label),
     inherit.aes = FALSE,
     color = "black",
     size = 3,
@@ -182,7 +186,7 @@ spec_plot <- spec_plot +
   )
 
 ext_plot <- ggplot(rate_ext, aes(x = rate, y = event, height = after_stat(density))) +
-  geom_density_ridges(aes(fill = event), linewidth = 0.5, scale = 0.45, alpha = 0.2, stat = 'density') +
+  geom_density_ridges(aes(fill = event), linewidth = 0.5, scale = 0.9, alpha = 0.2, stat = 'density') +
   scale_y_discrete(
     labels = c(
       "mu_H_frac" = expression(paste(hat(epsilon)[H])),
@@ -202,14 +206,10 @@ ext_plot <- ggplot(rate_ext, aes(x = rate, y = event, height = after_stat(densit
   theme(plot.title = element_text(hjust = 0.5))
 
 ext_plot <- ext_plot +
-  labs(title = NULL, x = NULL, y = NULL) +
-  scale_x_continuous(
-    limits = c(-0.2, 1.2),
-    breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1)
-  ) +
+  labs(title = NULL, x = NULL, y = NULL) + xlim(-0.2, 1.2) +
   geom_text(
     data = ext_stats,
-    aes(x = mean + sd * -0.5 + 0, y = event, label = label),
+    aes(x = mean + sd + 0.3, y = event, label = label),
     inherit.aes = FALSE,
     color = "black",
     size = 3,
@@ -220,20 +220,16 @@ ext_plot <- ext_plot +
 # the BLenD a panel of posterior predictive checks
 sim_x <- NULL
 sim_y <- NULL
-group <- NULL
 breaks <- seq(from = -1, to = 1, length.out = n_bin + 1) 
 for (row_id in 1:nrow(SS_sim_acc)) {
   sim_y <- c(sim_y, unlist(SS_sim_acc[row_id, 1:n_bin]) / sum(unlist(SS_sim_acc[row_id, 1:n_bin])) ) # revert the BLenD SSs to its original scale for plotting
   sim_x <- c(sim_x, (breaks[-1] + breaks[-length(breaks)]) / 2)
-  group <- c(group, rep(as.character(row_id), length(breaks)-1))
 }
-point_data <- data.frame(x = sim_x, y = sim_y / (2 / n_bin), group)
+point_data <- data.frame(x = sim_x, y = sim_y / (2 / n_bin))
 line_data <- data.frame(x = (breaks[-1] + breaks[-length(breaks)]) / 2, y = (SS_real[SS_sel[1:n_bin]] / sum(SS_real[SS_sel[1:n_bin]])) / (2 / n_bin)) # revert the BLenD SSs to its original scale for plotting
 blend_a_plot <- ggplot() +
-  geom_line(data = point_data, aes(x = x, y = y, group = group), size = 0.5, color = "black", alpha = 0.3) +  # Scatter plot
-  geom_line(data = line_data, aes(x = x, y = y), linewidth = 1, color = "red") +      # Line plot
-  xlim(-1, 1) +
-  ylim(0, 7) +
+  geom_point(data = point_data, aes(x = x, y = y), size = 0.5, color = "red", alpha = 0.3) +  # Scatter plot
+  geom_line(data = line_data, aes(x = x, y = y), linewidth = 1, color = "black") +      # Line plot
   labs(title = NULL, x = NULL, y = NULL) +
   # labs(title = "BLenD-a", x = expression(d[a]), y = "density") +
   theme_bw() +
@@ -243,19 +239,15 @@ blend_a_plot <- ggplot() +
 # the BLenD b panel of posterior predictive checks
 sim_x <- NULL
 sim_y <- NULL
-group <- NULL
 for (row_id in 1:nrow(SS_sim_acc)) {
   sim_y <- c(sim_y, unlist(SS_sim_acc[row_id, (n_bin+1):(2*n_bin)]) / sum(unlist(SS_sim_acc[row_id, (n_bin+1):(2*n_bin)])) ) # revert the BLenD SSs to its original scale for plotting
   sim_x <- c(sim_x, (breaks[-1] + breaks[-length(breaks)]) / 2)
-  group <- c(group, rep(as.character(row_id), length(breaks)-1))
 }
 point_data <- data.frame(x = sim_x, y = sim_y / (2 / n_bin))
 line_data <- data.frame(x = (breaks[-1] + breaks[-length(breaks)]) / 2, y = (SS_real[SS_sel[(n_bin+1):(2*n_bin)]] / sum(SS_real[SS_sel[(n_bin+1):(2*n_bin)]])) / (2 / n_bin)) # revert the BLenD SSs to its original scale for plotting
 blend_b_plot <- ggplot() +
-  geom_line(data = point_data, aes(x = x, y = y, group = group), size = 0.5, color = "black", alpha = 0.3) +  # Scatter plot
-  geom_line(data = line_data, aes(x = x, y = y), linewidth = 1, color = "red") +      # Line plot
-  xlim(-1, 1) +
-  ylim(0, 7) +
+  geom_point(data = point_data, aes(x = x, y = y), size = 0.5, color = "red", alpha = 0.3) +  # Scatter plot
+  geom_line(data = line_data, aes(x = x, y = y), linewidth = 1, color = "black") +      # Line plot
   labs(title = NULL, x = NULL, y = NULL) +
   # labs(title = "BLenD-b", x = expression(delta[b]), y = "density") +
   theme_bw() +
@@ -270,8 +262,8 @@ for (row_id in 1:length(ids_sim_acc)) {
 point_data <- data.frame(y = sim_y)
 line_data <- SS_real_raw[[1]][SS_sel[(n_bin * 2 + 1)]]
 tree_size_h_plot <- ggplot(point_data, aes(x = "", y = y)) +  # Empty string for x-axis
-  geom_jitter(width = 0.2, color = "black", size = 2, alpha = 0.3) +
-  geom_hline(yintercept = line_data, color = "red", linewidth = 1) +
+  geom_jitter(width = 0.2, color = "red", size = 1, alpha = 0.3) +
+  geom_hline(yintercept = line_data, color = "black", linewidth = 1) +
   ylim(10, 100) +
   labs(title = NULL, x = NULL, y = NULL) +
   # labs(title = "Hosts", x = '', y = "Number") +
@@ -291,8 +283,8 @@ for (row_id in 1:length(ids_sim_acc)) {
 point_data <- data.frame(y = sim_y)
 line_data <- SS_real_raw[[1]][SS_sel[(n_bin * 2 + 2)]]
 tree_size_s_plot <- ggplot(point_data, aes(x = "", y = y)) +  # Empty string for x-axis
-  geom_jitter(width = 0.2, color = "black", size = 2, alpha = 0.3) +
-  geom_hline(yintercept = line_data, color = "red", linewidth = 1) +
+  geom_jitter(width = 0.2, color = "red", size = 1, alpha = 0.3) +
+  geom_hline(yintercept = line_data, color = "black", linewidth = 1) +
   ylim(10, 100) +
   labs(title = NULL, x = NULL, y = NULL) +
   # labs(title = "Symbionts", x = '', y = "Number") +
@@ -304,8 +296,7 @@ tree_size_s_plot <- ggplot(point_data, aes(x = "", y = y)) +  # Empty string for
     axis.text.x = element_blank()
   )
 
-# panels_OG[[length(panels_OG) + 1]] <- list(spec_plot, ext_plot, blend_a_plot, blend_b_plot, tree_size_h_plot, tree_size_s_plot)
-panels_OG[[0 + 1]] <- list(spec_plot, ext_plot, blend_a_plot, blend_b_plot, tree_size_h_plot, tree_size_s_plot)
+panels_OG[[length(panels_OG) + 1]] <- list(spec_plot, ext_plot, blend_a_plot, blend_b_plot, tree_size_h_plot, tree_size_s_plot)
 
 panels <- panels_OG
 
@@ -317,49 +308,41 @@ file_name <- paste(prefix, 'cophy_ABC_results/real_para_est.rds', sep = '')
 list.save(para_est, file_name)
 
 # For Fig 4
+layoutplot <- "
+aaaaaaaaaaaaa#cccccccc#ddddddddXXXYYY
+eeeeeeeeeeeeenggggggggohhhhhhhhwzzWZZ
+eeeeeeeeeeeeenggggggggohhhhhhhhwzzWZZ
+eeeeeeeeeeeeenggggggggohhhhhhhhwzzWZZ
+eeeeeeeeeeeeenggggggggohhhhhhhhwzzWZZ
+eeeeeeeeeeeeenggggggggohhhhhhhhwzzWZZ
+eeeeeeeeeeeeenggggggggohhhhhhhhwzzWZZ
+eeeeeeeeeeeeenggggggggohhhhhhhhwzzWZZ
+bbbbbbbbbbbbbnggggggggohhhhhhhhwzzWZZ
+fffffffffffffnggggggggohhhhhhhhwzzWZZ
+fffffffffffffnggggggggohhhhhhhhwzzWZZ
+fffffffffffffnggggggggohhhhhhhhwzzWZZ
+##############jjjjjjjj#kkkkkkkk######
+"
 # layoutplot <- "
-# aaaaaaaaaa#ccccccccccc#dddddddddddXXXYYY
-# eeeeeeeeeengggggggggggohhhhhhhhhhhwzzWZZ
-# eeeeeeeeeengggggggggggohhhhhhhhhhhwzzWZZ
-# eeeeeeeeeengggggggggggohhhhhhhhhhhwzzWZZ
-# eeeeeeeeeengggggggggggohhhhhhhhhhhwzzWZZ
-# eeeeeeeeeengggggggggggohhhhhhhhhhhwzzWZZ
-# eeeeeeeeeengggggggggggohhhhhhhhhhhwzzWZZ
-# eeeeeeeeeengggggggggggohhhhhhhhhhhwzzWZZ
-# bbbbbbbbbbngggggggggggohhhhhhhhhhhwzzWZZ
-# ffffffffffngggggggggggohhhhhhhhhhhwzzWZZ
-# ffffffffffngggggggggggohhhhhhhhhhhwzzWZZ
-# ffffffffffngggggggggggohhhhhhhhhhhwzzWZZ
-# ###########jjjjjjjjjjj#kkkkkkkkkkk######
+# aaaaaaaaaaaaa#cccccccc#dddddddd#XXXX
+# eeeeeeeeeeeeenggggggggohhhhhhhhwzzzz
+# eeeeeeeeeeeeenggggggggohhhhhhhhwzzzz
+# eeeeeeeeeeeeenggggggggohhhhhhhhwzzzz
+# eeeeeeeeeeeeenggggggggohhhhhhhhwzzzz
+# eeeeeeeeeeeeenggggggggohhhhhhhhwzzzz
+# eeeeeeeeeeeeenggggggggohhhhhhhh#YYYY
+# eeeeeeeeeeeeenggggggggohhhhhhhhWZZZZ
+# bbbbbbbbbbbbbnggggggggohhhhhhhhWZZZZ
+# fffffffffffffnggggggggohhhhhhhhWZZZZ
+# fffffffffffffnggggggggohhhhhhhhWZZZZ
+# fffffffffffffnggggggggohhhhhhhhWZZZZ
+# ##############jjjjjjjj#kkkkkkkk#####
 # "
 
-layoutplot <- "
-#####################ccccc
-####################nggggg
-####################nggggg
-####################nggggg
-####################nggggg
-####################nggggg
-#####################jjjjj
-#####################ddddd
-####################ohhhhh
-####################ohhhhh
-####################ohhhhh
-####################ohhhhh
-####################ohhhhh
-#####################kkkkk
-aaaaaaaaaabbbbbbbbbbXXXYYY
-eeeeeeeeeeffffffffffwzzWZZ
-eeeeeeeeeeffffffffffwzzWZZ
-eeeeeeeeeeffffffffffwzzWZZ
-eeeeeeeeeeffffffffffwzzWZZ
-eeeeeeeeeeffffffffffwzzWZZ
-"
-
-a <- ggplot() + annotate(geom = 'text', x=1, y=1, label="b) Speciation rate", size = 5.2) + theme_void()
-b <- ggplot() + annotate(geom = 'text', x=1, y=1, label="c) Relative extinction rate", size = 5.2) + theme_void()
-c <- ggplot() + annotate(geom = 'text', x=1, y=1, label="d) BLenD-a", size = 5.2) + theme_void()
-d <- ggplot() + annotate(geom = 'text', x=1, y=1, label="e) BLenD-b", size = 5.2) + theme_void()
+a <- ggplot() + annotate(geom = 'text', x=1, y=1, label="a) Speciation rate", size = 5.2) + theme_void()
+b <- ggplot() + annotate(geom = 'text', x=1, y=1, label="b) Relative extinction rate", size = 5.2) + theme_void()
+c <- ggplot() + annotate(geom = 'text', x=1, y=1, label="c) BLenD-a", size = 5.2) + theme_void()
+d <- ggplot() + annotate(geom = 'text', x=1, y=1, label="d) BLenD-b", size = 5.2) + theme_void()
 
 e <- panels[[1]][[1]]
 f <- panels[[1]][[2]]
@@ -373,8 +356,8 @@ k <- ggplot() + annotate(geom = 'text', x=1, y=1, label=expression(paste(delta[b
 n <- ggplot() + annotate(geom = 'text', x=1, y=1, label = "Density", size = 5, angle = 90) + theme_void() 
 o <- ggplot() + annotate(geom = 'text', x=1, y=1, label = "Density", size = 5, angle = 90) + theme_void() 
 
-X <- ggplot() + annotate(geom = 'text', x=1, y=1, label="f) Hosts", size = 5.2) + theme_void()
-Y <- ggplot() + annotate(geom = 'text', x=1, y=1, label="g) Symbionts", size = 5.2) + theme_void()
+X <- ggplot() + annotate(geom = 'text', x=1, y=1, label="e) Hosts", size = 5.2) + theme_void()
+Y <- ggplot() + annotate(geom = 'text', x=1, y=1, label="f) Symbionts", size = 5.2) + theme_void()
 z <- panels[[1]][[5]]
 Z <- panels[[1]][[6]]
 w <- ggplot() + annotate(geom = 'text', x=1, y=1, label = "Number", size = 5, angle = 90) + theme_void() 
@@ -436,7 +419,7 @@ plotlist <- list(
 )
 
 setwd("/groups/cromanpa/yzeng")
-pdf(paste(prefix, 'cophy_ABC_results/', "beetle_results_Fig4_20260415.pdf", sep = ''), width = 10, height = 10, pointsize = 12)
+pdf(paste(prefix, 'cophy_ABC_results/', "beetle_results_Fig4_20260321.pdf", sep = ''), width = 12, height = 6, pointsize = 12)
 print(wrap_plots(plotlist, guides = 'keep', design = layoutplot) &
         theme(
           legend.position = 'none' #c(0.85,0.7),

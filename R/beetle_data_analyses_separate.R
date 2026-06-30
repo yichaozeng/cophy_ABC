@@ -8,6 +8,7 @@ library(ggridges)
 library(ggpubr)
 library(ggbreak)
 library(dplyr)
+library(viridis)
 
 sim_time <- 2 # this is the time of simulations
 n_bin <- 150 # this is the Number of summary statistics for each of the three normalized distributions
@@ -78,7 +79,9 @@ sd_vec <- c(
 )
 SS <- as.data.frame(t(apply(SS, 1, function(x) rescale(vec = x, sd_vec = sd_vec))))
 
-rel_err <- NULL
+# read in the data frame coontaining the prior
+file_name <- paste("ex_", 'cophy_ABC_convergence/cross_validation_sizes', '.csv', sep = '')
+rel_err <- read.csv(file_name)
 
 # which summary statistics to use
 # these include the three normalized distributions - the BLenD distribution, the distribution of difference in centrality between each host-symbiont pair, and the distribution of symbiont centrality (Number of actual hosts devided by the Number of potential hosts)
@@ -94,128 +97,322 @@ setwd("/home/u29/yichaozeng/Desktop")
 source('cophy_ABC/R/ABC_parameter_estimation.R')
 source('cophy_ABC/R/actual_run.R')
 
-para_est[[length(para_est) + 1]] <- list(para_sim_acc)
-SS_est[[length(SS_est) + 1]] <- list(SS_sim_acc)
+para_est[[0 + 1]] <- list(para_sim_acc)
+SS_est[[0 + 1]] <- list(SS_sim_acc)
+
 
 # create the panels
-rate_spec <- data.frame(
-  rate = c(para_sim_acc$lambda_H, para_sim_acc$lambda_S, para_sim_acc$lambda_C, para_sim_acc$exp_H),
-  event = c(rep('lambda_H', nrow(para_sim_acc)), rep('lambda_S', nrow(para_sim_acc)), rep('lambda_C', nrow(para_sim_acc)), rep('lambda_W', nrow(para_sim_acc)) )
-)
-rate_spec$event <- factor(rate_spec$event, levels = c('lambda_H', 'lambda_S', 'lambda_C', 'lambda_W'))
+# averaging function
+aver <- function(vec, every){ # averaging function for every X rows
+  temp <- tapply(vec, (seq_along(vec)-1) %/% every, mean)
+  return(temp)
+}
 
-rate_ext <- data.frame(
-  rate = c(para_sim_acc$mu_H_frac, para_sim_acc$mu_S_frac), #/ 13.75,
-  event = c(rep('mu_H_frac', nrow(para_sim_acc)), rep('mu_S_frac', nrow(para_sim_acc)) )
-)
-rate_ext$event <- factor(rate_ext$event, levels = c('mu_H_frac', 'mu_S_frac'))
+# here we process the rates (for both the prior and posterior distributions)
+# for the posterior
+para_sim_acc$mu_H <- para_sim_acc$mu_H_frac * (para_sim_acc$lambda_H + para_sim_acc$lambda_C)
+para_sim_acc$mu_S <- para_sim_acc$mu_S_frac * (para_sim_acc$lambda_S + para_sim_acc$lambda_C + para_sim_acc$exp_H)
 
-spec_cl <- c(
-  "#4E79A7",
-  "#F28E2B",
-  "#E15759",
-  "#76B7B2"
+para_sim_acc$r_cophy <- para_sim_acc$lambda_H + para_sim_acc$lambda_C - para_sim_acc$mu_H + para_sim_acc$lambda_S + para_sim_acc$lambda_C + para_sim_acc$exp_H - para_sim_acc$mu_S
+
+dat_joint_posterior_relative <- data.frame(
+  lambda_H_frac = para_sim_acc$lambda_H / para_sim_acc$r_cophy,
+  lambda_S_frac = para_sim_acc$lambda_S / para_sim_acc$r_cophy,
+  lambda_C_frac = para_sim_acc$lambda_C / para_sim_acc$r_cophy,
+  lambda_W_frac = para_sim_acc$exp_H / para_sim_acc$r_cophy,
+  mu_H_frac = para_sim_acc$mu_H / para_sim_acc$r_cophy,
+  mu_S_frac = para_sim_acc$mu_S / para_sim_acc$r_cophy,
+  group = rep('posterior', nrow(para_sim_acc))
 )
 
-ext_cl <- c(
-  "#B07AA1",
-  "#59A14F"
+dat_joint_posterior_absolute <- data.frame(
+  lambda_H = para_sim_acc$lambda_H,
+  lambda_S = para_sim_acc$lambda_S,
+  lambda_C = para_sim_acc$lambda_C,
+  lambda_W = para_sim_acc$exp_H,
+  mu_H = para_sim_acc$mu_H,
+  mu_S = para_sim_acc$mu_S,
+  group = rep('posterior', nrow(para_sim_acc))
 )
+
+# for the prior
+para_sim_md$mu_H <- para_sim_md$mu_H_frac * (para_sim_md$lambda_H + para_sim_md$lambda_C)
+para_sim_md$mu_S <- para_sim_md$mu_S_frac * (para_sim_md$lambda_S + para_sim_md$lambda_C + para_sim_md$exp_H)
+
+para_sim_md$r_cophy <- para_sim_md$lambda_H + para_sim_md$lambda_C - para_sim_md$mu_H + para_sim_md$lambda_S + para_sim_md$lambda_C + para_sim_md$exp_H - para_sim_md$mu_S
+
+dat_joint_prior_relative <- data.frame(
+  lambda_H_frac = para_sim_md$lambda_H / para_sim_md$r_cophy,
+  lambda_S_frac = para_sim_md$lambda_S / para_sim_md$r_cophy,
+  lambda_C_frac = para_sim_md$lambda_C / para_sim_md$r_cophy,
+  lambda_W_frac = para_sim_md$exp_H / para_sim_md$r_cophy,
+  mu_H_frac = para_sim_md$mu_H / para_sim_md$r_cophy,
+  mu_S_frac = para_sim_md$mu_S / para_sim_md$r_cophy,
+  group = rep('prior', nrow(para_sim_acc))
+)[1:1000 * 1200,] # subsetting to reduce plotting pressure
+
+dat_joint_prior_absolute <- data.frame(
+  lambda_H = para_sim_md$lambda_H,
+  lambda_S = para_sim_md$lambda_S,
+  lambda_C = para_sim_md$lambda_C,
+  lambda_W = para_sim_md$exp_H,
+  mu_H = para_sim_md$mu_H,
+  mu_S = para_sim_md$mu_S,
+  group = rep('prior', nrow(para_sim_acc))
+)[1:1000 * 1200,] # subsetting to reduce plotting pressure
+
+# now we plot the joint distribution
+dat_relative <- rbind(dat_joint_prior_relative, dat_joint_posterior_relative)
+dat_absolute <- rbind(dat_joint_prior_absolute, dat_joint_posterior_absolute)
+
+dat_relative$group <- factor(dat_relative$group, levels = c('prior', 'posterior'))
+dat_absolute$group <- factor(dat_absolute$group, levels = c('prior', 'posterior'))
+
+pair_relative <- GGally::ggpairs(
+  log10(dat_relative[,1:6]),
+  columnLabels = c(
+    'hat(lambda)[H] / hat(r)',
+    'hat(lambda)[S] / hat(r)',
+    'hat(lambda)[C] / hat(r)',
+    'hat(lambda)[W] / hat(r)',
+    'hat(mu)[H] / hat(r)',
+    'hat(mu)[S] / hat(r)'
+  ),
+  labeller = "label_parsed",
+  lower = list(continuous = "points"),
+  upper = list(continuous = "blank"),
+  diag = list(continuous = wrap("densityDiag", alpha = 0.6)),
+  mapping = aes(color = dat_relative$group),
+)+
+  scale_color_manual(
+    values = c(
+      "black", "#B1CAE1"
+    )
+  )+
+  scale_fill_manual(
+    values = c(
+      "black", "#B1CAE1"
+    )
+  )
+# pair_relative
+
+pair_absolute <- GGally::ggpairs(
+  log10(dat_absolute[,1:6]),
+  columnLabels = c(
+    'hat(lambda)[H]',
+    'hat(lambda)[S]',
+    'hat(lambda)[C]',
+    'hat(lambda)[W]',
+    'hat(mu)[H]',
+    'hat(mu)[S]'
+  ),
+  labeller = "label_parsed",
+  lower = list(continuous = "points"),
+  upper = list(continuous = "blank"),
+  diag = list(continuous = wrap("densityDiag", alpha = 0.6)),
+  mapping = aes(color = dat_absolute$group),
+)+
+  scale_color_manual(
+    values = c(
+      "black", "#F28E2B"
+    )
+  )+
+  scale_fill_manual(
+    values = c(
+      "black", "#F28E2B"
+    )
+  )
+# pair_absolute
+
+
+setwd("/groups/cromanpa/yzeng")
+
+pdf(paste(prefix, 'cophy_ABC_results/', "pair_relative.pdf", sep = ''), width = 10, height = 10, pointsize = 12)
+print(pair_relative)
+dev.off()
+
+pdf(paste(prefix, 'cophy_ABC_results/', "pair_absolute.pdf", sep = ''), width = 10, height = 10, pointsize = 12)
+print(pair_absolute)
+dev.off()
+
+
+# now we plot the marginal distributio
+
+rate_relative <- data.frame(
+  rate = c(dat_joint_posterior_relative$lambda_H_frac, dat_joint_posterior_relative$lambda_S_frac, dat_joint_posterior_relative$lambda_C_frac, dat_joint_posterior_relative$lambda_W_frac, dat_joint_posterior_relative$mu_H_frac, dat_joint_posterior_relative$mu_S_frac),
+  event = c(rep('lambda_H_frac', nrow(dat_joint_posterior_relative)), rep('lambda_S_frac', nrow(dat_joint_posterior_relative)), rep('lambda_C_frac', nrow(dat_joint_posterior_relative)), rep('lambda_W_frac', nrow(dat_joint_posterior_relative)), rep('mu_H_frac', nrow(dat_joint_posterior_relative)), rep('mu_S_frac', nrow(dat_joint_posterior_relative)))
+)
+rate_relative$event <- factor(rate_relative$event, levels = c('lambda_H_frac', 'lambda_S_frac', 'lambda_C_frac', 'lambda_W_frac', 'mu_H_frac', 'mu_S_frac'))
+
+rate_absolute <- data.frame(
+  rate = c(dat_joint_posterior_absolute$lambda_H, dat_joint_posterior_absolute$lambda_S, dat_joint_posterior_absolute$lambda_C, dat_joint_posterior_absolute$lambda_W, dat_joint_posterior_absolute$mu_H, dat_joint_posterior_absolute$mu_S),
+  event = c(rep('lambda_H', nrow(dat_joint_posterior_absolute)), rep('lambda_S', nrow(dat_joint_posterior_absolute)), rep('lambda_C', nrow(dat_joint_posterior_absolute)), rep('lambda_W', nrow(dat_joint_posterior_absolute)), rep('mu_H', nrow(dat_joint_posterior_absolute)), rep('mu_S', nrow(dat_joint_posterior_absolute)))
+)
+rate_absolute$event <- factor(rate_absolute$event, levels = c('lambda_H', 'lambda_S', 'lambda_C', 'lambda_W', 'mu_H', 'mu_S'))
+
+
+
+# rate_spec <- data.frame(
+#   rate = c(para_sim_acc$lambda_H, para_sim_acc$lambda_S, para_sim_acc$lambda_C, para_sim_acc$exp_H),
+#   event = c(rep('lambda_H', nrow(para_sim_acc)), rep('lambda_S', nrow(para_sim_acc)), rep('lambda_C', nrow(para_sim_acc)), rep('lambda_W', nrow(para_sim_acc)) )
+# )
+# rate_spec$event <- factor(rate_spec$event, levels = c('lambda_H', 'lambda_S', 'lambda_C', 'lambda_W'))
+# 
+# rate_spec_ratio <- data.frame(
+#   ratio = c(para_sim_acc$lambda_H/para_sim_acc$sum_lambda_host, para_sim_acc$lambda_S/para_sim_acc$sum_lambda_symb, para_sim_acc$lambda_C/para_sim_acc$sum_lambda_host, para_sim_acc$lambda_C/para_sim_acc$sum_lambda_symb, para_sim_acc$exp_H/para_sim_acc$sum_lambda_symb),
+#   event = c(rep('lambda_H', nrow(para_sim_acc)), rep('lambda_S', nrow(para_sim_acc)), rep('lambda_C_host', nrow(para_sim_acc)), rep('lambda_C_symb', nrow(para_sim_acc)), rep('lambda_W', nrow(para_sim_acc)) )
+# )
+# rate_spec_ratio$event <- factor(rate_spec_ratio$event, levels = c('lambda_H', 'lambda_S', 'lambda_C_host', 'lambda_C_symb', 'lambda_W'))
+# 
+# rate_ext <- data.frame(
+#   rate = c(para_sim_acc$mu_H_frac, para_sim_acc$mu_S_frac), #/ 13.75,
+#   event = c(rep('mu_H_frac', nrow(para_sim_acc)), rep('mu_S_frac', nrow(para_sim_acc)) )
+# )
+# rate_ext$event <- factor(rate_ext$event, levels = c('mu_H_frac', 'mu_S_frac'))
+
+# relative_cl <- c(
+#   "#4E79A7",
+#   "#F28E2B",
+#   "#E15759",
+#   "#76B7B2"
+# )
+# 
+# relative_cl <- c(
+#   "#B07AA1",
+#   "#59A14F"
+# )
 
 # here we convert the speciation rates back to events/Myr
-rate_spec$rate <- rate_spec$rate * sim_time / 27.5 # essentially this gives you the number of each type of events per lineage
+rate_absolute_arbitrary <- rate_absolute # rates in events/lineage/Myr
+rate_absolute$rate <- rate_absolute$rate * sim_time / 27.5 # essentially this gives you the number of each type of events per lineage
 
 # rate_spec$rate <- rate_spec$rate * sim_time # essentially this gives you the number of each type of events per lineage
 
-spec_stats <- rate_spec %>%
+relative_stats <- rate_relative %>%
   group_by(event) %>%
   summarise(
     mean = mean(rate),
     sd   = sd(rate)
   )
-spec_stats <- spec_stats %>%
+relative_stats <- relative_stats %>%
   mutate(label = sprintf("%.2f ± %.2f", mean, sd))
 
-ext_stats <- rate_ext %>%
+absolute_stats <- rate_absolute %>%
   group_by(event) %>%
   summarise(
     mean = mean(rate),
     sd   = sd(rate)
   )
-ext_stats <- ext_stats %>%
+absolute_stats <- absolute_stats %>%
   mutate(label = sprintf("%.2f ± %.2f", mean, sd))
 
 
-spec_plot <- ggplot(rate_spec, aes(x = rate, y = event, height = after_stat(density))) +
-  geom_density_ridges(aes(fill = event), linewidth = 0.5, scale = 0.9, alpha = 0.2, stat = 'density') +
-  scale_y_discrete(
-    labels = c(
-      "lambda_H" = expression(paste(hat(lambda)[H])),
-      "lambda_S" = expression(paste(hat(lambda)[S])),
-      "lambda_C" = expression(paste(hat(lambda)[C])),
-      "lambda_W" = expression(paste(hat(lambda)[W]))
-      ),
-    expand = expansion(add = c(0.5, 1))
-    ) +
-  # xlim(, ) +
-  labs(title = "Speciation rate estimates", x = "events/lineage/time", y = NULL) +
-  scale_fill_manual(
-    values = spec_cl,
+relative_plot <- ggplot(rate_relative, aes(x = event, y = rate)) +
+  
+  geom_violin(
+    aes(fill = event),
+    alpha = 0.2,
+    linewidth = 0.5,
+    trim = FALSE
   ) +
+  
+  geom_boxplot(
+    width = 0.12,
+    outlier.size = 0.8,
+    linewidth = 0.4,
+    alpha = 0.8
+  ) +
+  
+  scale_y_log10() +
+  
+  # coord_flip() +
+  
+  scale_x_discrete(
+    labels = c(
+      "lambda_H_frac" = expression(frac(hat(lambda)[H], hat(r))),
+      "lambda_S_frac" = expression(frac(hat(lambda)[S], hat(r))),
+      "lambda_C_frac" = expression(frac(hat(lambda)[C], hat(r))),
+      "lambda_W_frac" = expression(frac(hat(lambda)[W], hat(r))),
+      "mu_H_frac" = expression(frac(hat(mu)[H], hat(r))),
+      "mu_S_frac" = expression(frac(hat(mu)[S], hat(r)))
+    )
+  ) +
+  
+  labs(
+    title = NULL,
+    x = NULL,
+    y = NULL
+  ) +
+  
+  # scale_fill_manual(values = spec_cl) +
+  
   theme_bw() +
   theme(panel.grid = element_blank()) +
   theme(legend.position = "none") +
-  theme(axis.text.y = element_text(size = 14, face = "bold")) +
+  # theme(axis.text.x = element_text(
+  #   angle = 45,
+  #   hjust = 1
+  # )) +
+  theme(axis.text.x = element_text(size = 12, face = "bold")) +
   theme(plot.title = element_text(hjust = 0.5))
 
-spec_plot <- spec_plot +
-  labs(title = NULL, x =  "events/lineage/Myr", y = NULL) +
-  xlim(-1* sim_time / 27.5, 6* sim_time / 27.5) +
-  geom_text(
-    data = spec_stats,
-    aes(x = mean + sd, y = event, label = label),
-    inherit.aes = FALSE,
-    color = "black",
-    size = 3,
-    hjust = 0,
-    vjust = -0.5
-  )
 
-ext_plot <- ggplot(rate_ext, aes(x = rate, y = event, height = after_stat(density))) +
-  geom_density_ridges(aes(fill = event), linewidth = 0.5, scale = 0.45, alpha = 0.2, stat = 'density') +
-  scale_y_discrete(
+
+
+
+absolute_plot <- ggplot(rate_absolute, aes(x = event, y = rate)) +
+  
+  geom_violin(
+    aes(fill = event),
+    alpha = 0.2,
+    linewidth = 0.5,
+    trim = FALSE
+  ) +
+  
+  geom_boxplot(
+    width = 0.12,
+    outlier.size = 0.8,
+    linewidth = 0.4,
+    alpha = 0.8
+  ) +
+  
+  scale_y_log10() +
+  
+  # coord_flip() +
+  
+  scale_x_discrete(
     labels = c(
-      "mu_H_frac" = expression(paste(hat(epsilon)[H])),
-      "mu_S_frac" = expression(paste(hat(epsilon)[S]))
-    ),
-    expand = expansion(add = c(0.5, 1))
+      "lambda_H" = expression(hat(lambda)[H]),
+      "lambda_S" = expression(hat(lambda)[S]),
+      "lambda_C" = expression(hat(lambda)[C]),
+      "lambda_W" = expression(hat(lambda)[W]),
+      "mu_H" = expression(hat(mu)[H]),
+      "mu_S" = expression(hat(mu)[S])
+    )
   ) +
-  xlim(-0.2, 1.2) +
-  labs(title = "extinction rate estimates", x = "", y = NULL) +
-  scale_fill_manual(
-    values = ext_cl,
+  
+  labs(
+    title = NULL,
+    x = NULL,
+    y = "events / lineage / Myr"
   ) +
+  
+  # scale_fill_manual(values = spec_cl) +
+  
   theme_bw() +
   theme(panel.grid = element_blank()) +
   theme(legend.position = "none") +
-  theme(axis.text.y = element_text(size = 14, face = "bold")) +
+  # theme(axis.text.x = element_text(
+  #   angle = 45,
+  #   hjust = 1
+  # )) +
+  theme(axis.text.x = element_text(size = 12, face = "bold")) +
   theme(plot.title = element_text(hjust = 0.5))
 
-ext_plot <- ext_plot +
-  labs(title = NULL, x = NULL, y = NULL) +
-  scale_x_continuous(
-    limits = c(-0.2, 1.2),
-    breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1)
-  ) +
-  geom_text(
-    data = ext_stats,
-    aes(x = mean + sd * -0.5 + 0, y = event, label = label),
-    inherit.aes = FALSE,
-    color = "black",
-    size = 3,
-    hjust = 0,
-    vjust = -0.5
-  )
+
+
+
+
 
 # the BLenD a panel of posterior predictive checks
 sim_x <- NULL
@@ -305,7 +502,7 @@ tree_size_s_plot <- ggplot(point_data, aes(x = "", y = y)) +  # Empty string for
   )
 
 # panels_OG[[length(panels_OG) + 1]] <- list(spec_plot, ext_plot, blend_a_plot, blend_b_plot, tree_size_h_plot, tree_size_s_plot)
-panels_OG[[0 + 1]] <- list(spec_plot, ext_plot, blend_a_plot, blend_b_plot, tree_size_h_plot, tree_size_s_plot)
+panels_OG[[0 + 1]] <- list(relative_plot, absolute_plot, blend_a_plot, blend_b_plot, tree_size_h_plot, tree_size_s_plot)
 
 panels <- panels_OG
 
@@ -356,8 +553,8 @@ eeeeeeeeeeffffffffffwzzWZZ
 eeeeeeeeeeffffffffffwzzWZZ
 "
 
-a <- ggplot() + annotate(geom = 'text', x=1, y=1, label="b) Speciation rate", size = 5.2) + theme_void()
-b <- ggplot() + annotate(geom = 'text', x=1, y=1, label="c) Relative extinction rate", size = 5.2) + theme_void()
+a <- ggplot() + annotate(geom = 'text', x=1, y=1, label="b) Relative rates", size = 5.2) + theme_void()
+b <- ggplot() + annotate(geom = 'text', x=1, y=1, label="c) Absolute rates", size = 5.2) + theme_void()
 c <- ggplot() + annotate(geom = 'text', x=1, y=1, label="d) BLenD-a", size = 5.2) + theme_void()
 d <- ggplot() + annotate(geom = 'text', x=1, y=1, label="e) BLenD-b", size = 5.2) + theme_void()
 
@@ -436,7 +633,7 @@ plotlist <- list(
 )
 
 setwd("/groups/cromanpa/yzeng")
-pdf(paste(prefix, 'cophy_ABC_results/', "beetle_results_Fig4_20260415.pdf", sep = ''), width = 10, height = 10, pointsize = 12)
+pdf(paste(prefix, 'cophy_ABC_results/', "beetle_results_Fig4_20260525.pdf", sep = ''), width = 10, height = 10, pointsize = 12)
 print(wrap_plots(plotlist, guides = 'keep', design = layoutplot) &
         theme(
           legend.position = 'none' #c(0.85,0.7),

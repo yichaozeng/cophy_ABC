@@ -45,7 +45,9 @@ if(exists('cros_val') == 1){
     para_ABC[cros_val_ids,1],
     para_ABC[cros_val_ids,2],
     para_ABC[cros_val_ids,3],
-    para_ABC[cros_val_ids,4]
+    para_ABC[cros_val_ids,4],
+    para_ABC[cros_val_ids,5],
+    para_ABC[cros_val_ids,6]
   )
   
   sizes_real <- list(
@@ -60,18 +62,15 @@ if(exists('cros_val') == 1){
   
 }else if(exists('real_data_run') == 1){
   # read in real data
+  # an important realization here is that scaling branch lengths of the cophylogeny changes neither the BLenD nor the size-based summary statistics. So there is no need to rescale the beetle cophylogeny here!
   cophy_real <- list(list.load('cophy_ABC/R/real_data/cophy_real.rds'))
-  
-  # compute the summary statistics
-  tr_ht <- cophy_real[[1]][[1]]$root.edge + max(nodeHeights(cophy_real[[1]][[1]])) # tree height
-  breaks <- seq(from = -tr_ht, to = tr_ht, length.out = n_bin + 1) # length.out should be no. of bins + 1
-  
+
   # here, have a list containing multiple vectors of SSs
   SS_real <- foreach(i = 1:length(cophy_real)) %dopar% {
     
     #print(i)
     unlist(c(
-      SS_norm(list(cophy_real[[i]]), breaks = breaks, tr_ht = tr_ht),
+      SS_norm(list(cophy_real[[i]])),
       SS_size(list(cophy_real[[i]]))
     ))
     
@@ -90,7 +89,7 @@ if(exists('cros_val') == 1){
 }
 
 
-para_sim <- para_ABC[,c('lambda_H', 'lambda_S', 'lambda_C', 'exp_H')]
+para_sim <- para_ABC[,c('lambda_H', 'lambda_S', 'lambda_C', 'exp_H', 'mu_H_frac', 'mu_S_frac')]
 SS_sim <- SS_ABC
 
 para_sim_md <- para_sim

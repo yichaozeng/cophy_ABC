@@ -6,11 +6,13 @@ get_BL <- function(tree, tip_name){
 }
 
 # SS_norm is a function that computes the average difference in divergence between the host and symbiont for all pairs of species-to-species pairs
-SS_norm <- function(cophys, breaks, tr_ht){
+SS_norm <- function(cophys){
+  
+  n_bin <- 150 # number of bins when for the density estimation
   
   SS_1 <- NULL
   SS_2 <- NULL
-
+  
   for (cophy_id in 1:length(cophys)) {
     
     cophy <- cophys[[cophy_id]]
@@ -24,6 +26,16 @@ SS_norm <- function(cophys, breaks, tr_ht){
     tree1 <- keep.tip(tree1, rownames(net))
     tree2 <- keep.tip(tree2, colnames(net))
     
+    # now we compute the height of the cophylogeny
+    # # option 1: defined as the height of the taller of the two trees
+    # tr_ht <- max(
+    #   max(nodeHeights(cophy[[1]])), # the host tree
+    #   max(nodeHeights(cophy[[2]]))  # the symbiont tree
+    # )
+    # option 2: defined as the origin-to-tip distance
+    tr_ht <- max(nodeHeights(cophy[[1]])) + cophy[[1]]$root.edge
+    breaks <- seq(from = -tr_ht, to = tr_ht, length.out = n_bin + 1) # length.out should be no. of bins + 1
+    
     # find all species-to-species pairs
     net_long <- melt(net)
     S_to_S_pairs <- net_long[net_long$value == 1, 1:2]
@@ -34,14 +46,14 @@ SS_norm <- function(cophys, breaks, tr_ht){
     
     # the difference
     
-    # Option 1: use the values of delta, where delta is the difference between associated branches
+    # BLenD 1: use the values of delta, where delta is the difference between associated branches
     # here we only use the pairwise differences * 1/2 (such that the range is still between -tr_ht and tr_ht)
     blend_1 <- (S_to_S_pairs$BL1 - S_to_S_pairs$BL2) / tr_ht # the original BLenD
     blend_1 <- combn(blend_1, 2, function(y) abs(diff(y))) # the differences (all positives)
     blend_1 <- c(blend_1, -blend_1)  # the differences (positives and negatives)
     blend_1 <- blend_1/2
     
-    # Option 2: use the values of delta, where delta is the difference between the lengths of host branches of sister symbiont species
+    # BLenD 2: use the values of delta, where delta is the difference between the lengths of host branches of sister symbiont species
     # go over every tip in the symbiont tree to find the root node id of each
     daug_moth_mat <- NULL # a matrix used to record the daughter-mother relationships
     for (tip_id in 1:length(tree2$tip.label)) {
@@ -82,7 +94,6 @@ SS_norm <- function(cophys, breaks, tr_ht){
     }
     blend_2 <- blend_2 / tr_ht
     
-
     # obtain the counts (density-based approach with smoothing)
     dens_1 <- density(blend_1, from = -1, to = 1)
     counts_1 <- approx(dens_1$x, dens_1$y, xout = (breaks[-1] + breaks[-length(breaks)])/(2*tr_ht), method = 'linear')$y
@@ -99,7 +110,7 @@ SS_norm <- function(cophys, breaks, tr_ht){
     list(
       SS_1, #blend 1
       SS_2  #blend 2
-   )
+    )
   )
   
 }
@@ -132,13 +143,6 @@ SS_size <- function(cophys){
     
   }
   
-  # again, this is a controversial step where only the medians are used
-  # return(c(
-  #   median(size_tree1),
-  #   median(size_tree2),
-  #   median(size_net)
-  # ))
-  
   return(list(
     size_tree1,
     size_tree2,
@@ -158,7 +162,7 @@ ABC_taxi <- function(target, param, sumstat, tol){
   # or an alternative version (rank-based) that can handle simulations of equal distance to the data
   n_acc <- ceiling(tol * length(dist_taxi))
   indices <- order(dist_taxi)[1:n_acc]
-
+  
   return(
     list(
       unadj.values = param[indices, ], #unadj.values = param[dist_taxi <= rej_thres, ],

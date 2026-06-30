@@ -93,8 +93,7 @@ rel_err_aver_prior <- data.frame(
 
 for (parameter in 1:6) {
   
-  preds_prior_post <- NULL
-  labels_prior_post <- NULL
+  box_data_prior_post <- NULL
   
   for (temp_id in 1:2) {
     
@@ -102,21 +101,6 @@ for (parameter in 1:6) {
     
     # the harmonic means of the two tree sizes
     x <- log10( 2* rel_err_aver$h_tree_size * rel_err_aver$s_tree_size / (rel_err_aver$h_tree_size + rel_err_aver$s_tree_size) )
-    
-    # true parameter value
-    # x <- #log10(
-    #   list(
-    #     lambda_H_prior,
-    #     lambda_S_prior,
-    #     lambda_C_prior,
-    #     exp_H_prior
-    #   )[[lambda]]
-    # #)
-    
-    # y1 <- log( abs(rel_err_aver$lambda_H_abs_aver) / rel_err_aver$lambda_H_abs_stan_dev )
-    # y2 <- log( abs(rel_err_aver$lambda_S_abs_aver) / rel_err_aver$lambda_S_abs_stan_dev )
-    # y3 <- log( abs(rel_err_aver$lambda_C_abs_aver) / rel_err_aver$lambda_C_abs_stan_dev )
-    # y4 <- log( abs(rel_err_aver$exp_H_abs_aver) / rel_err_aver$exp_H_abs_stan_dev )
     
     y1 <- abs(rel_err_aver$lambda_H_abs_aver) / rel_err_aver$lambda_H_abs_stan_dev
     y2 <- abs(rel_err_aver$lambda_S_abs_aver) / rel_err_aver$lambda_S_abs_stan_dev
@@ -127,112 +111,32 @@ for (parameter in 1:6) {
     
     y <- rbind(y1, y2, y3, y4, y5, y6)[parameter,]
     df <- data.frame(x=x, y=y)
-    # mod <- lm(y ~ x, data = df)
-    # df_pred <- cbind(df, predict(mod, interval = "prediction", level = 0.90))
     
-    # qs <- c(0.25, 0.5, 0.75)
-    qs <- c(0.2, 0.5, 0.8)
+    # discretize cophylogeny size and add variable indicating prior or posterior
+    df$x[df$x <= 1] <- '0-10'
+    df$x[df$x > 1 & df$x <= 2] <- '11-100'
+    df$x[df$x > 2] <- '>101'
+    df$x <- factor(df$x, levels = c('0-10', '11-100', '>101'))
     
-    # Create a sequence of x values for smooth prediction
-    x_seq <- seq(min(df$x), max(df$x), length.out = 200)
+    df$prior_posterior <- rep(c('prior', 'posterior')[temp_id], length(df$x))
+    df$prior_posterior <- factor(df$prior_posterior, levels = c('prior', 'posterior'))
     
-    # Function to estimate local sample density
-    local_density <- sapply(x_seq, function(x) {
-      sum(abs(df$x - x) < 0.3)  # window size = 0.3
-    })
-    
-    # Fit smooth quantile regressions using splines
-    preds <- lapply(qs, function(q) {
-      fit <- rq(y ~ bs(x, df = 3), tau = q, data = df)  # spline fit
-      data.frame(
-        x = x_seq,
-        y = predict(fit, newdata = data.frame(x = x_seq)),
-        quantile = q,
-        n_local = local_density
-      )
-    }) %>%
-      bind_rows()
-    
-    # keep only prediction based on high densities
-    preds <- preds[preds$n_local >= 90, ]
-    preds_prior_post[[length(preds_prior_post) + 1]] <- preds
-    
-    # Extract end points for labeling
-    labels <- preds %>%
-      group_by(quantile) %>%
-      filter(x == range(x)[temp_id]) %>%
-      mutate(label = paste0(quantile * 100, "%"))
-    labels_prior_post[[length(labels_prior_post) + 1]] <- labels
+    # stack the data frames for the prior and posterior
+    box_data_prior_post <- rbind(box_data_prior_post, df)
     
   }
   
   title_char <- list(
-    expression(paste('g) ', hat(lambda)[H])),
-    expression(paste('h) ', hat(lambda)[S])),
-    expression(paste('i) ', hat(lambda)[C])),
-    expression(paste('j) ', hat(lambda)[W])),
-    expression(paste('k) ', hat(epsilon)[H])),
-    expression(paste('l) ', hat(epsilon)[S]))
+    expression(hat(lambda)[H]),
+    expression(hat(lambda)[S]),
+    expression(hat(lambda)[C]),
+    expression(hat(lambda)[W]),
+    expression(hat(epsilon)[H]),
+    expression(hat(epsilon)[S])
   )[[parameter]]
   
-  err_plots[[length(err_plots) + 1]] <- ggplot(df, aes(x = x, y = y)) +
-    # geom_point(size = 1, alpha = 1, color = point_color) +
-    # geom_hex(bins = 20) +
-    # geom_point(size = 1.8, alpha = 0.5)
-    # scale_fill_viridis(option="viridis") +
-    # scale_fill_viridis(option="viridis", limits = c(0, 22)) +
-    # geom_hline(yintercept = 0, linetype = "dashed", color = "gray", linewidth = 0.5) +
-    geom_line(
-      data = preds_prior_post[[1]],
-      aes(y = y, group = quantile),
-      linewidth = 0.5,
-      linetype = "dashed",
-      color = 'black'
-    ) +
-    geom_line(
-      data = preds_prior_post[[2]],
-      aes(y = y, group = quantile),
-      linewidth = 1,
-      color = c(
-        "#F28E2B",#"#4E79A7",
-        "#F28E2B",
-        "#F28E2B",#"#E15759",
-        "#F28E2B",#"#76B7B2",
-        "#F28E2B",#"#B07AA1",
-        "#F28E2B"#"#59A14F"
-      )[parameter]
-    ) +
-    geom_text(
-      data = labels_prior_post[[1]],
-      aes(y = y, label = label),
-      hjust = 1.2, size = 3, color = 'black',
-      fontface = "bold"
-    ) +
-    geom_text(
-      data = labels_prior_post[[2]],
-      aes(y = y, label = label),
-      hjust = -0.1, size = 3, color = c(
-        "#F28E2B",#"#4E79A7",
-        "#F28E2B",
-        "#F28E2B",#"#E15759",
-        "#F28E2B",#"#76B7B2",
-        "#F28E2B",#"#B07AA1",
-        "#F28E2B"#"#59A14F"
-      )[parameter],
-      fontface = "bold"
-    ) +
-    scale_x_continuous(
-      limits = c(-1, 3.7),
-      breaks = c(0, 1, 2, 3),
-      labels = expression(10^0, 10^1, 10^2, 10^3)
-    ) +
-    # ylim(0, 2) +
-    ylim(0, 3.2) +
-    theme_bw() +
-    theme(panel.grid = element_blank()) +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    theme(panel.background = element_rect(fill = "white")) +
-    labs(title = title_char, x = NULL, y = NULL)
+  err_plots[[length(err_plots) + 1]] <- ggplot(box_data_prior_post, aes(x=x, y=log(y), fill=prior_posterior)) + 
+    geom_split_violin()
   
 }
 
@@ -354,125 +258,31 @@ for (parameter in 1:6) {
     y <- rbind(y1, y2, y3, y4, y5, y6)[parameter,]
     
     df <- data.frame(x=x, y=y)
-    # mod <- lm(y ~ x, data = df)
-    # df_pred <- cbind(df, predict(mod, interval = "prediction", level = 0.90))
+    # discretize cophylogeny size and add variable indicating prior or posterior
+    df$x[df$x <= 1] <- '0-10'
+    df$x[df$x > 1 & df$x <= 2] <- '11-100'
+    df$x[df$x > 2] <- '>101'
+    df$x <- factor(df$x, levels = c('0-10', '11-100', '>101'))
     
-    # qs <- c(0.25, 0.5, 0.75)
-    qs <- c(0.2, 0.5, 0.8)
+    df$prior_posterior <- rep(c('prior', 'posterior')[temp_id], length(df$x))
+    df$prior_posterior <- factor(df$prior_posterior, levels = c('prior', 'posterior'))
     
-    # Create a sequence of x values for smooth prediction
-    x_seq <- seq(min(df$x), max(df$x), length.out = 200)
-    
-    # Function to estimate local sample density
-    local_density <- sapply(x_seq, function(x) {
-      sum(abs(df$x - x) < 0.3)  # window size = 0.3
-    })
-    
-    # Fit smooth quantile regressions using splines
-    preds <- lapply(qs, function(q) {
-      fit <- rq(y ~ bs(x, df = 3), tau = q, data = df)  # spline fit
-      data.frame(
-        x = x_seq,
-        y = predict(fit, newdata = data.frame(x = x_seq)),
-        quantile = q,
-        n_local = local_density
-      )
-    }) %>%
-      bind_rows()
-    
-    # keep only prediction based on high densities
-    preds <- preds[preds$n_local >= 90, ]
-    preds_prior_post[[length(preds_prior_post) + 1]] <- preds
-    
-    # Extract end points for labeling
-    labels <- preds %>%
-      group_by(quantile) %>%
-      filter(x == range(x)[temp_id]) %>%
-      mutate(label = paste0(quantile * 100, "%"))
-    labels_prior_post[[length(labels_prior_post) + 1]] <- labels
-    
+    # stack the data frames for the prior and posterior
+    box_data_prior_post <- rbind(box_data_prior_post, df)
+
   }
   
   title_char <- list(
-    expression(paste('a) ', hat(lambda)[H])),
-    expression(paste('b) ',  hat(lambda)[S])),
-    expression(paste('c) ',  hat(lambda)[C])),
-    expression(paste('d) ',  hat(lambda)[W])),
-    expression(paste('e) ',  hat(epsilon)[H])),
-    expression(paste('f) ',  hat(epsilon)[S]))
+    expression(hat(lambda)[H]),
+    expression(hat(lambda)[S]),
+    expression(hat(lambda)[C]),
+    expression(hat(lambda)[W]),
+    expression(hat(epsilon)[H]),
+    expression(hat(epsilon)[S])
   )[[parameter]]
   
-  err_plots[[length(err_plots) + 1]] <- ggplot(df, aes(x = x, y = y)) +
-    # geom_hex(bins = 20) +
-    # geom_point(size = 1.8, alpha = 0.5)
-    # geom_smooth(data = subset(df, x >= quantile(df$x, 0) & x <= quantile(df$x, 1)), method = "loess", color = "white", linewidth = 0.9, se = FALSE) +
-    # scale_fill_viridis(option="magma") +
-    # scale_fill_viridis(option="magma", limits = c(0, 32)) +
-    # geom_ribbon(aes(ymin = lwr, ymax = upr),
-    #             fill = "chocolate", alpha = 0.2) +
-    # geom_point(aes(y = y)) +
-    # geom_line(aes(y = fit), colour = "chocolate", size = 1) +
-    #geom_smooth(aes(y = y), method = "loess", se = TRUE, level = 0.95, color = "chocolate", fill = "lightchocolate") +
-    geom_line(
-      data = preds_prior_post[[1]],
-      aes(y = y, group = quantile),
-      linewidth = 0.5,
-      color = 'black',
-      linetype = 'dashed'
-    ) +
-    geom_line(
-      data = preds_prior_post[[2]],
-      aes(y = y, group = quantile),
-      linewidth = 1,
-      color = c(
-        "#4E79A7",
-        "#4E79A7",#"#F28E2B",
-        "#4E79A7",#"#E15759",
-        "#4E79A7",#"#76B7B2",
-        "#4E79A7",#"#B07AA1",
-        "#4E79A7"#"#59A14F"
-      )[parameter]
-    ) +
-    geom_text(
-      data = labels_prior_post[[1]],
-      aes(y = y, label = label),
-      hjust = 1.2, size = 3, color = 'black',
-      fontface = "bold"
-    ) +
-    geom_text(
-      data = labels_prior_post[[2]],
-      aes(y = y, label = label),
-      hjust = -0.1, size = 3, color = c(
-        "#4E79A7",
-        "#4E79A7",#"#F28E2B",
-        "#4E79A7",#"#E15759",
-        "#4E79A7",#"#76B7B2",
-        "#4E79A7",#"#B07AA1",
-        "#4E79A7"#"#59A14F"
-      )[parameter],
-      fontface = "bold"
-    ) +
-    scale_x_continuous(
-      limits = c(-1, 3.7),
-      breaks = c(0, 1, 2, 3),
-      labels = expression(10^0, 10^1, 10^2, 10^3)
-    ) +
-    # ylim(-3, 2.5) +
-    ylim(-4.5, 4.5) +
-    theme_bw() +
-    theme(panel.grid = element_blank()) +
-    theme(plot.title = element_text(hjust = 0.5)) +
-    theme(panel.background = element_rect(fill = "white")) +
-    labs(title = title_char, x = NULL, y = NULL) #+ 
-  # annotate(
-  #   "text", 
-  #   x = 0, y = 5.5, 
-  #   label = paste0("Slope=", round(slope, 2), ", ",
-  #                  "r=", round(r, 2)),
-  #   hjust = 0,
-  #   size = 3.5,
-  #   color = 'white'
-  # )
+  err_plots[[length(err_plots) + 1]] <- ggplot(box_data_prior_post, aes(x=x, y=y, fill=prior_posterior)) + 
+    geom_split_violin()
   
 }
 
@@ -542,7 +352,7 @@ yaabbccddeeff
 
 print('plotting')
 #png(paste(prefix, 'cophy_ABC_convergence/', "convergence_comb", "_", as.character(mu_H_frac), "_", as.character(mu_S_frac), ".png", sep = ''), width = 10, height = 10, units = 'in', pointsize = 12, res = 300)
-pdf(paste('ex_cophy_ABC_convergence/', "fig_4_errors_ratios_regression_20260417", ".pdf", sep = ''), width = 11*0.9, height = 9*0.9, pointsize = 12)
+pdf(paste('ex_cophy_ABC_convergence/', "fig_4_errors_ratios_box_20260331", ".pdf", sep = ''), width = 11, height = 9, pointsize = 12)
 print(wrap_plots(plot_list_fig_4, guides = 'collect', design = layoutplot_fig_4) &
         theme(legend.position = "left",
               legend.text = element_text(size = 8, angle = 0, vjust = 0.5, hjust = 0.5),

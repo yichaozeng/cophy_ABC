@@ -94,8 +94,11 @@ setwd("/home/u29/yichaozeng/Desktop")
 source('cophy_ABC/R/ABC_parameter_estimation.R')
 source('cophy_ABC/R/actual_run.R')
 
-para_est[[length(para_est) + 1]] <- list(para_sim_acc)
-SS_est[[length(SS_est) + 1]] <- list(SS_sim_acc)
+para_sim_acc$sum_lambda_host <- para_sim_acc$lambda_H + para_sim_acc$lambda_C
+para_sim_acc$sum_lambda_symb <- para_sim_acc$lambda_S + para_sim_acc$lambda_C + para_sim_acc$exp_H
+
+para_est[[0 + 1]] <- list(para_sim_acc)
+SS_est[[0 + 1]] <- list(SS_sim_acc)
 
 # create the panels
 rate_spec <- data.frame(
@@ -103,6 +106,12 @@ rate_spec <- data.frame(
   event = c(rep('lambda_H', nrow(para_sim_acc)), rep('lambda_S', nrow(para_sim_acc)), rep('lambda_C', nrow(para_sim_acc)), rep('lambda_W', nrow(para_sim_acc)) )
 )
 rate_spec$event <- factor(rate_spec$event, levels = c('lambda_H', 'lambda_S', 'lambda_C', 'lambda_W'))
+
+rate_spec_ratio <- data.frame(
+  ratio = c(para_sim_acc$lambda_H/para_sim_acc$sum_lambda_host, para_sim_acc$lambda_S/para_sim_acc$sum_lambda_symb, para_sim_acc$lambda_C/para_sim_acc$sum_lambda_host, para_sim_acc$lambda_C/para_sim_acc$sum_lambda_symb, para_sim_acc$exp_H/para_sim_acc$sum_lambda_symb),
+  event = c(rep('lambda_H', nrow(para_sim_acc)), rep('lambda_S', nrow(para_sim_acc)), rep('lambda_C_host', nrow(para_sim_acc)), rep('lambda_C_symb', nrow(para_sim_acc)), rep('lambda_W', nrow(para_sim_acc)) )
+)
+rate_spec_ratio$event <- factor(rate_spec_ratio$event, levels = c('lambda_H', 'lambda_S', 'lambda_C_host', 'lambda_C_symb', 'lambda_W'))
 
 rate_ext <- data.frame(
   rate = c(para_sim_acc$mu_H_frac, para_sim_acc$mu_S_frac), #/ 13.75,
@@ -123,6 +132,7 @@ ext_cl <- c(
 )
 
 # here we convert the speciation rates back to events/Myr
+rate_spec_arbitrary <- rate_spec # rates in events/lineage/Myr
 rate_spec$rate <- rate_spec$rate * sim_time / 27.5 # essentially this gives you the number of each type of events per lineage
 
 # rate_spec$rate <- rate_spec$rate * sim_time # essentially this gives you the number of each type of events per lineage
@@ -146,34 +156,35 @@ ext_stats <- ext_stats %>%
   mutate(label = sprintf("%.2f ± %.2f", mean, sd))
 
 
-spec_plot <- ggplot(rate_spec, aes(x = rate, y = event, height = after_stat(density))) +
-  geom_density_ridges(aes(fill = event), linewidth = 0.5, scale = 0.9, alpha = 0.2, stat = 'density') +
-  scale_y_discrete(
+spec_plot <- ggplot(rate_spec, aes(x = event, y = rate)) +
+  geom_violin(aes(fill = event), linewidth = 0.5, alpha = 0.4, trim = F) +
+  geom_boxplot(width = 0.1, outlier.size = 0.5, alpha = 0.5) +
+  scale_x_discrete(
     labels = c(
       "lambda_H" = expression(paste(hat(lambda)[H])),
       "lambda_S" = expression(paste(hat(lambda)[S])),
       "lambda_C" = expression(paste(hat(lambda)[C])),
       "lambda_W" = expression(paste(hat(lambda)[W]))
-      ),
-    expand = expansion(add = c(0.5, 1))
+      )#,
+    # expand = expansion(add = c(0.5, 1))
     ) +
   # xlim(, ) +
-  labs(title = "Speciation rate estimates", x = "events/lineage/time", y = NULL) +
+  labs(title = "Speciation rate estimates", y = "events/lineage/Myr", x = NULL) +
   scale_fill_manual(
     values = spec_cl,
   ) +
   theme_bw() +
   theme(panel.grid = element_blank()) +
   theme(legend.position = "none") +
-  theme(axis.text.y = element_text(size = 14, face = "bold")) +
+  theme(axis.text.x = element_text(size = 14, face = "bold")) +
   theme(plot.title = element_text(hjust = 0.5))
 
 spec_plot <- spec_plot +
-  labs(title = NULL, x =  "events/lineage/Myr", y = NULL) +
-  xlim(-1* sim_time / 27.5, 6* sim_time / 27.5) +
+  labs(title = NULL, y =  "events/lineage/Myr", x = NULL) +
+  # xlim(-1* sim_time / 27.5, 6* sim_time / 27.5) +
   geom_text(
     data = spec_stats,
-    aes(x = mean + sd, y = event, label = label),
+    aes(y = mean + sd, x = event, label = label),
     inherit.aes = FALSE,
     color = "black",
     size = 3,
@@ -181,16 +192,20 @@ spec_plot <- spec_plot +
     vjust = -0.5
   )
 
-ext_plot <- ggplot(rate_ext, aes(x = rate, y = event, height = after_stat(density))) +
-  geom_density_ridges(aes(fill = event), linewidth = 0.5, scale = 0.45, alpha = 0.2, stat = 'density') +
-  scale_y_discrete(
+
+
+
+ext_plot <- ggplot(rate_ext, aes(x = event, y = rate)) +
+  geom_violin(aes(fill = event), linewidth = 0.5, alpha = 0.2, trim = F) +
+  geom_boxplot(width = 0.1, outlier.size = 0.5, alpha = 0.5) +
+  scale_x_discrete(
     labels = c(
       "mu_H_frac" = expression(paste(hat(epsilon)[H])),
       "mu_S_frac" = expression(paste(hat(epsilon)[S]))
-    ),
-    expand = expansion(add = c(0.5, 1))
+    )#,
+    #expand = expansion(add = c(0.5, 1))
   ) +
-  xlim(-0.2, 1.2) +
+  # ylim(-0.2, 1.2) +
   labs(title = "extinction rate estimates", x = "", y = NULL) +
   scale_fill_manual(
     values = ext_cl,
@@ -198,18 +213,18 @@ ext_plot <- ggplot(rate_ext, aes(x = rate, y = event, height = after_stat(densit
   theme_bw() +
   theme(panel.grid = element_blank()) +
   theme(legend.position = "none") +
-  theme(axis.text.y = element_text(size = 14, face = "bold")) +
+  theme(axis.text.x = element_text(size = 14, face = "bold")) +
   theme(plot.title = element_text(hjust = 0.5))
 
 ext_plot <- ext_plot +
   labs(title = NULL, x = NULL, y = NULL) +
-  scale_x_continuous(
+  scale_y_continuous(
     limits = c(-0.2, 1.2),
     breaks = c(0, 0.2, 0.4, 0.6, 0.8, 1)
   ) +
   geom_text(
     data = ext_stats,
-    aes(x = mean + sd * -0.5 + 0, y = event, label = label),
+    aes(y = mean + sd * -0.5 + 0, x = event, label = label),
     inherit.aes = FALSE,
     color = "black",
     size = 3,
