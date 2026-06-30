@@ -13,6 +13,11 @@ $$
 
 where ($\epsilon_H$) and ($\epsilon_S$) range between 0 and 1.
 
+We define 
+
+\r = \frac{2\bullet r_{host}\ {\bullet r}_{symbiont}}{r_{host}\ +\ r_{symbiont}}\ #\left(1\right)
+
+
 For the user's information, some parameters are assigned a different name in the code: $\lambda_W$ - `exp_H`, $\epsilon_H$ - `mu_H_frac`, and $\epsilon_S$ - `mu_S_frac`.
 
 The tutorial provided here is the full procedure to estimate macroevolutionary rates from a given cophylogeny, using the BLenD-a / BLenD-b curves and tree sizes as summary statistics. This procedure is illustrated with a re-analysis of the cophylogenetic dataset from Van Dam et al. (2024). 
