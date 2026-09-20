@@ -89,7 +89,7 @@ Dismukes, W., & Heath, T. A. (2021). treeducken: An R package for simulating cop
 Van Dam, M. H., Parisotto, A., Medina, M. N., Cabras, A. A., Gutiérrez-Trejo, N., Wilts, B. D., & Lam, A. W. (2024). Biogeography confounds the signal of cospeciation in Batesian mimicry. Current Biology, 34(23), 5554-5563.
 
 ## Citation
-[To be updated when the preprint or the journal article gets published.]
+Zeng, Y., C. Román-Palacios, 2026. Macroevolutionary rates of species interactions: approximate Bayesian inference from cophylogenies. Systematic Biology. https://doi.org/10.1093/sysbio/syag070.
 
 ## Contact
 - Any questions or comments are welcome and should be sent to Yichao Zeng (yichaozeng44@gmail.com).
